@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta name="referrer" content="no-referrer">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>RomyLive+ 2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0b0e13;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100%}
+body{padding:14px 16px 40px}
+a{color:inherit;text-decoration:none}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:20px;font-weight:800;color:#1e90ff;letter-spacing:.5px}
+h1 span{color:#fff;font-weight:600;font-size:13px;margin-left:6px;opacity:.6}
+#search{flex:1;min-width:160px;background:#151a22;border:1px solid #232b36;color:#fff;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+#search:focus{border-color:#1e90ff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;background:#151a22;border:1px solid #232b36;color:#cfd6e0;border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+.chip.on{background:#1e90ff;border-color:#1e90ff;color:#fff;font-weight:700}
+.chip:focus{outline:none;border-color:#1e90ff;box-shadow:0 0 0 2px rgba(30,144,255,.5)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.card{background:#131821;border:1px solid #1e2531;border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+.card:focus,.card:hover{outline:none;border-color:#fff;transform:scale(1.05);box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.thumb{width:100%;height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.thumb img{max-width:100%;max-height:56px;object-fit:contain}
+.thumb img.logo-loading{opacity:.35;filter:grayscale(1)}
+.ph{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#1e90ff,#0b4f9e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.name{font-size:12px;line-height:1.25;color:#e6ebf2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:30px}
+.empty{padding:40px 0;text-align:center;color:#8b93a1;font-size:14px}
+#pl{position:fixed;inset:0;background:#000;display:none;z-index:99}
+#pl.on{display:block}
+#vid{width:100%;height:100%;background:#000;display:block}
+#bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);z-index:5;transition:opacity .35s ease}
+#bar.hid{opacity:0;pointer-events:none}
+#ttl{font-size:14px;font-weight:700;flex:1;text-shadow:0 1px 3px #000}
+#close{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer}
+#close:focus{outline:none;border-color:#fff;background:#1e90ff}
+#hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:12px;color:#9aa3b1}
+footer{margin-top:20px;text-align:center;font-size:11px;color:#5a6474}
+</style>
+</head>
+<body>
+<header>
+  <h1>RomyLive+ 2<span id="cnt"></span></h1>
+  <input id="search" type="search" placeholder="Caut&#259; canal..." autocomplete="off">
+</header>
+<div class="chips" id="chips"></div>
+<div id="grid"></div>
+<div class="empty" id="empty" style="display:none">Nicio potrivire.</div>
+<footer id="status">RomyLive+ 2</footer>
+
+<div id="pl">
+  <div id="bar"><div id="ttl"></div><button id="close">&#10005; &Icirc;nchide</button></div>
+  <video id="vid" controls autoplay playsinline></video>
+  <div id="hint"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"></script>
+<script>
+var CH = [{"n":"Acasa Gold","l":"https://rds.live/wp-content/uploads/2023/01/acasa-gold-320x180.jpg","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_acasagold%2Fvideo.m3u8"},{"n":"Acasa TV","l":"https://rds.live/wp-content/uploads/2023/01/acasa-tv-320x180.jpg","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_acasatv%2Fvideo.m3u8"},{"n":"Antena 1","l":"https://rds.live/wp-content/uploads/2024/11/ChatGPT-Image-May-31-2026-02_39_43-AM-320x180.png","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_antena1_s1%2Fvideo.m3u8"},{"n":"Antena Stars","l":"https://rds.live/wp-content/uploads/2024/11/ChatGPT-Image-May-31-2026-11_32_52-AM-320x180.png","c":["Generaliste"],"u":"https://stream1.antenaplay.ro/live/AntenaMonden/playlist.m3u8"},{"n":"Happy Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_happychannel%2Fvideo.m3u8"},{"n":"Kanal D","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_kanald%2Fvideo.m3u8"},{"n":"KANAL D2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fkanald2hd%2Fvideo.m3u8"},{"n":"Metropola TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_metropola%2Fvideo.m3u8"},{"n":"National 24 Plus","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_national24plus%2Fvideo.m3u8"},{"n":"National TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nationaltv%2Fvideo.m3u8"},{"n":"Prima TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primatv%2Fvideo.m3u8"},{"n":"Pro TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_protv_s1%2Fvideo.m3u8"},{"n":"TVR 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftvr1hd%2Fvideo.m3u8"},{"n":"TVR 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftvr2sd%2Fvideo.m3u8"},{"n":"TVR 3","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftvr3sd%2Fvideo.m3u8"},{"n":"TVR Cultural","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_cultural%2Fvideo.m3u8"},{"n":"TVR International","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Generaliste"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_tvrinternational%2Fvideo.m3u8"},{"n":"DigiSport 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fdigisport1%2Fvideo.m3u8"},{"n":"DigiSport 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digisport2%2Fvideo.m3u8"},{"n":"DigiSport 3","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digisport3%2Fvideo.m3u8"},{"n":"DigiSport 4","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digisport4%2Fvideo.m3u8"},{"n":"Eurosport 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_eurosport1%2Fvideo.m3u8"},{"n":"Eurosport 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_eurosport2%2Fvideo.m3u8"},{"n":"Fight Box","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_fightbox%2Fvideo.m3u8"},{"n":"PrimaSport 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primasport1%2Fvideo.m3u8"},{"n":"PrimaSport 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primasport2%2Fvideo.m3u8"},{"n":"PrimaSport 3","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primasport3%2Fvideo.m3u8"},{"n":"PrimaSport 4","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fcanale-tv.net%2Fchannel%2Fprimasp4.html"},{"n":"PrimaSport 5","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primasport5%2Fvideo.m3u8"},{"n":"Pro Arena","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_proarena%2Fvideo.m3u8"},{"n":"Sport Extra","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fsportextrahd%2Fvideo.m3u8"},{"n":"TVR Sport","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Sport"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftvrsport%2Fvideo.m3u8"},{"n":"AMC","l":"https://rds.live/wp-content/uploads/2025/10/ChatGPT-Image-Jun-10-2026-09_10_35-AM-320x180.png","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_amc%2Fvideo.m3u8"},{"n":"Antena Comedy","l":"https://rds.live/wp-content/uploads/2023/10/ChatGPT-Image-May-31-2026-11_30_30-AM-320x180.png","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_antenacomedy%2Fvideo.m3u8"},{"n":"AXN","l":"https://rds.live/wp-content/uploads/2024/02/ChatGPT-Image-Jun-10-2026-09_25_54-AM-320x180.png","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_axn%2Fvideo.m3u8"},{"n":"AXN Black","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_axnblack%2Fvideo.m3u8"},{"n":"AXN Spin","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_axnspin%2Fvideo.m3u8"},{"n":"AXN White","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_axnwhite%2Fvideo.m3u8"},{"n":"BBC First","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_bbcfirst%2Fvideo.m3u8"},{"n":"Bollywood Clasic","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_bollywoodclassic%2Fvideo.m3u8"},{"n":"Cinemaraton","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_cinemaraton%2Findex.m3u8"},{"n":"Cinemaraton Plus","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fcinemaratonplus%2Fvideo.m3u8"},{"n":"Cinemax","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_cinemax%2Fvideo.m3u8"},{"n":"Cinemax 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_cinemax2%2Fvideo.m3u8"},{"n":"Comedy Central","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_comedycentral%2Findex.m3u8"},{"n":"DIVA","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_diva%2Fvideo.m3u8"},{"n":"Epic Drama","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_epicdrama%2Fvideo.m3u8"},{"n":"Film Cafe","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmcafe%2Fvideo.m3u8"},{"n":"Film Mania","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffilmmania%2Fvideo.m3u8"},{"n":"Film Now","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmnow%2Fvideo.m3u8"},{"n":"FilmBox Emotion","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmbocemotion%2Fvideo.m3u8"},{"n":"FilmBox Hits","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmboxhits%2Fvideo.m3u8"},{"n":"FilmBox One","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmboxone%2Fvideo.m3u8"},{"n":"Filme Actiune","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmeactiune1%2Fvideo.m3u8"},{"n":"Filme Angelina Jolie","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmeAngelinaJolie%2Fvideo.m3u8"},{"n":"Filme Bollywood","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmebollywood%2Fvideo.m3u8"},{"n":"Filme Comedie","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmecomedie1%2Fvideo.m3u8"},{"n":"Filme Craciun","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmecraciun%2Findex.m3u8"},{"n":"Filme Fantasy","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmefantasy%2Fvideo.m3u8"},{"n":"Filme Horror","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmehorror1%2Fvideo.m3u8"},{"n":"Filme Jason Statham","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_JasonStatham%2Fvideo.m3u8"},{"n":"Filme John Travolta","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_JohnTravolta%2Fvideo.m3u8"},{"n":"Filme Premiere","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmepremiere%2Fvideo.m3u8"},{"n":"Filme Razboi","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmerazboi%2Fvideo.m3u8"},{"n":"Filme Sci Fi","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmescifi1%2Fvideo.m3u8"},{"n":"Filme Sylvester Stallone","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmeStallone%2Fvideo.m3u8"},{"n":"Filme Thriller","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmethriller1%2Fvideo.m3u8"},{"n":"Filme Western","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_filmewestern%2Fvideo.m3u8"},{"n":"HBO","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_hbo%2Fvideo.m3u8"},{"n":"HBO 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_hbo2%2Fvideo.m3u8"},{"n":"HBO 3","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_hbo3%2Fvideo.m3u8"},{"n":"Las Fierbinti","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp13.magicplaces.eu%2Flas_ferbinti%2Fvideo.m3u8"},{"n":"Nostalgia TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nostalgiatv%2Fvideo.m3u8"},{"n":"Prima Comedy","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primacomedy%2Fvideo.m3u8"},{"n":"PRO Cinema","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_procinema%2Fvideo.m3u8"},{"n":"SkyShowTime 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_sky1%2Fvideo.m3u8"},{"n":"SkyShowTime 2","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_sky2%2Fvideo.m3u8"},{"n":"Viasat Kino","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_tv1000%2Fvideo.m3u8"},{"n":"Warner TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Filme"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fwarner%2Fvideo.m3u8"},{"n":"Aleph News","l":"https://rds.live/wp-content/uploads/2021/10/aleph-news-320x180.jpg","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_alephnews%2Fvideo.m3u8"},{"n":"Antena 3","l":"https://rds.live/wp-content/uploads/2023/01/ChatGPT-Image-Jun-10-2026-09_15_01-AM-320x180.png","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_antena3%2Findex.m3u8"},{"n":"B1TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_b1tv%2Fvideo.m3u8"},{"n":"BBC World News","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fbbcworldnewssd%2Fvideo.m3u8"},{"n":"CNN","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fcnnsd%2Fvideo.m3u8"},{"n":"Deutsche Welle","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fdvdeutsch%2Fvideo.m3u8"},{"n":"Digi24","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digi24%2Fvideo.m3u8"},{"n":"Euronews Romania","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_euronews%2Fvideo.m3u8"},{"n":"Nasul TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nasu%2Fvideo.m3u8"},{"n":"Observator News","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_observator_news%2Fvideo.m3u8"},{"n":"Prima News","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_primanews%2Fvideo.m3u8"},{"n":"Realitatea MD","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_realitateamd%2Fvideo.m3u8"},{"n":"Realitatea TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_realitateatv%2Fvideo.m3u8"},{"n":"Romania TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_romaniatv%2Fvideo.m3u8"},{"n":"TVR Info","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Stiri"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_info%2Fvideo.m3u8"},{"n":"Crime &#038; Investigation","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_crime%2Fvideo.m3u8"},{"n":"DaVinci","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_davinci%2Fvideo.m3u8"},{"n":"Digi Animal World","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digianimalworld%2Fvideo.m3u8"},{"n":"Digi Life","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_digilife%2Fvideo.m3u8"},{"n":"Digi World","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_animaldigiworld%2Fvideo.m3u8"},{"n":"Discovery Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_discovery%2Fvideo.m3u8"},{"n":"DocuBox","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_docubox%2Findex.m3u8"},{"n":"Dotto TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_dotto%2Fvideo.m3u8"},{"n":"Food Network","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffoodnetwork%2Fvideo.m3u8"},{"n":"ID Investigation Discovery","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_discoveryID%2Fvideo.m3u8"},{"n":"National Geographic","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_natgeo%2Fvideo.m3u8"},{"n":"National Geographic Wild","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_natgeowild%2Fvideo.m3u8"},{"n":"Prima History","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fprimahistory%2Fvideo.m3u8"},{"n":"Travel Mix","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftravelmixsd%2Fvideo.m3u8"},{"n":"Viasat Explore","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fviasatexploresd%2Fvideo.m3u8"},{"n":"Viasat History","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fviasathistorysd%2Fvideo.m3u8"},{"n":"Viasat Nature","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Documentare"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fviasatnaturesd%2Fvideo.m3u8"},{"n":"Cartoon Network","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_cartoonnetwork%2Fvideo.m3u8"},{"n":"Cartoonito","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_cartoonito%2Fvideo.m3u8"},{"n":"Disney Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_disneychannel%2Fvideo.m3u8"},{"n":"Disney Junior","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_disneyjr%2Fvideo.m3u8"},{"n":"Duck TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_duck%2Fvideo.m3u8"},{"n":"Grizzy &#038; Lemmings","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_lemmings%2Fvideo.m3u8"},{"n":"Jim Jam","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_jimjam%2Fvideo.m3u8"},{"n":"Kids Mania","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_kidsmania%2Fvideo.m3u8"},{"n":"Minimax","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_minimax%2Fvideo.m3u8"},{"n":"Nick Jr.","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nickjr%2Fvideo.m3u8"},{"n":"Nickelodeon","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nickoledeon%2Fvideo.m3u8"},{"n":"Nicktoons","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_nicktoons%2Fvideo.m3u8"},{"n":"TraLaLa","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Copii"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftralalasd%2Findex.m3u8"},{"n":"Atomic","l":"https://rds.live/wp-content/uploads/2024/12/ChatGPT-Image-Jun-10-2026-09_21_15-AM-320x180.png","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fatomictvsd%2Fvideo.m3u8"},{"n":"Atomic Academy TV","l":"https://rds.live/wp-content/uploads/2023/10/ChatGPT-Image-Jun-10-2026-09_23_06-AM-320x180.png","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_academy%2Fvideo.m3u8"},{"n":"Balcan Music TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fbalkanmusicsd%2Fvideo.m3u8"},{"n":"Chefi RO","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fzutvsd%2Fvideo.m3u8"},{"n":"Etno Tv","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_etno%2Fvideo.m3u8"},{"n":"H!T Music Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_hit_hitmusic%2Fvideo.m3u8"},{"n":"Impact TV Dance","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_impact_dance%2Fvideo.m3u8"},{"n":"Impact TV Manele","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_impact_manele%2Fvideo.m3u8"},{"n":"Kiss TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_kisstv%2Fvideo.m3u8"},{"n":"Magic TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_magictv%2Fvideo.m3u8"},{"n":"Mezzo","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_mezzo%2Fvideo.m3u8"},{"n":"Mooz Dance","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_moozdance%2Fvideo.m3u8"},{"n":"MTV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fmtveuropesd%2Fvideo.m3u8"},{"n":"Music Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_musicchannel%2Fvideo.m3u8"},{"n":"Party Mix","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_partymix%2Fvideo.m3u8"},{"n":"Rapsodia TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_rapsodia%2Fvideo.m3u8"},{"n":"Taraf TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_taraf%2Fvideo.m3u8"},{"n":"Tele 7 Music","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tele7music%2Fvideo.m3u8"},{"n":"Traditional TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftraditionaltvsd%2Fvideo.m3u8"},{"n":"TV Favorit","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffavorittvsd%2Fvideo.m3u8"},{"n":"U TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Muzica"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Futv%2Fvideo.m3u8"},{"n":"Agro TV","l":"https://rds.live/wp-content/uploads/2023/01/agro-tv-320x180.jpg","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_agro%2Fvideo.m3u8"},{"n":"BBC Earth","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_bbcearth%2Fvideo.m3u8"},{"n":"E Entertainment","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_entertainment%2Fvideo.m3u8"},{"n":"Fashion TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffashiontv%2Fvideo.m3u8"},{"n":"HD365","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_h365%2Fvideo.m3u8"},{"n":"HGTV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_hgtv%2Fvideo.m3u8"},{"n":"Job TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_jobtv%2Fvideo.m3u8"},{"n":"Medicool TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_medicooltv%2Fvideo.m3u8"},{"n":"Mireasa TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_mreasa%2Fvideo.m3u8"},{"n":"Rai 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frai1%2Fvideo.m3u8"},{"n":"Rai 3","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frai3%2Fvideo.m3u8"},{"n":"Tele 7 ABC","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tele7ABC%2Fvideo.m3u8"},{"n":"Tele Moldova+","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_telemoldovaplus%2Fvideo.m3u8"},{"n":"The Fishing and Hunting","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_fishing%2Fvideo.m3u8"},{"n":"TLC","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftlcsd%2Fvideo.m3u8"},{"n":"TV Moldova","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Fmoldovatvsd%2Fvideo.m3u8"},{"n":"TV Paprika","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Diverse"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ftvpaprika%2Fvideo.m3u8"},{"n":"Banat TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_banat_tv%2Fvideo.m3u8"},{"n":"Bucovina TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_bucovinatv%2Fvideo.m3u8"},{"n":"Hunedoara 1","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_hunedoara1%2Fvideo.m3u8"},{"n":"Nova TV Brasov","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_novatv_brasov%2Fvideo.m3u8"},{"n":"Tele M Botosani","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_telem_botosani%2Fvideo.m3u8"},{"n":"TVR Cluj","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_tvr_cluj%2Fvideo.m3u8"},{"n":"TVR Craiova","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_craiova%2Fvideo.m3u8"},{"n":"TVR Iasi","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_iasi%2Fvideo.m3u8"},{"n":"TVR Targu Mures","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_targu_mures%2Fvideo.m3u8"},{"n":"TVR Timisoara","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Regionale"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_tvr_timiosara%2Fvideo.m3u8"},{"n":"a7 TV","l":"https://rds.live/wp-content/uploads/2025/10/a7tv-ro-320x180.jpg","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_a7%2Fvideo.m3u8"},{"n":"Alfa Omega","l":"https://rds.live/wp-content/uploads/2026/06/alom-320x180.png","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_alfaomega%2Fvideo.m3u8"},{"n":"Angelus TV","l":"https://rds.live/wp-content/uploads/2025/10/ChatGPT-Image-Jun-10-2026-09_12_27-AM-320x180.png","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_angelustv%2Fvideo.m3u8"},{"n":"Credo TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_credo%2Fvideo.m3u8"},{"n":"Light Channel","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_light_channel%2Findex.m3u8"},{"n":"RTN Chicago","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Ffree_rtnchicago%2Fvideo.m3u8"},{"n":"Speranta TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_speranta%2Fvideo.m3u8"},{"n":"Trinitas TV","l":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20180'%3E%3C/svg%3E","c":["Religioase"],"u":"https://ivanturbinca.com/hls-proxy.php?src=https%3A%2F%2Fp11.magicplaces.eu%2Frds_trinitas%2Fvideo.m3u8"}];
+var CATS = ["Generaliste","Sport","Filme","Stiri","Documentare","Copii","Muzica","Diverse","Regionale","Religioase"];
+var SOURCE_API = '';
+var PROXY_BASES = [
+  '',
+  'https://ivanturbinca.com/hls-proxy.php?src=',
+  'http://scriptandstream.nhely.hu/rds.live-streamer.php?url='
+];
+var MAGIC_HOSTS = ['p17.magicplaces.eu','p11.magicplaces.eu','p13.magicplaces.eu','p14.magicplaces.eu','p15.magicplaces.eu','p16.magicplaces.eu'];
+var CACHE_KEY = 'romylive-channel-list-v3';
+var cur = 'Toate', q = '', hls = null, activeCandidate = 0, loadTimer = null;
+
+var grid = document.getElementById('grid'), chips = document.getElementById('chips'),
+    empty = document.getElementById('empty'), pl = document.getElementById('pl'),
+    vid = document.getElementById('vid'), ttl = document.getElementById('ttl'),
+    hint = document.getElementById('hint'), closeBtn = document.getElementById('close'),
+    search = document.getElementById('search'), status = document.getElementById('status');
+document.getElementById('cnt').textContent = CH.length + ' canale';
+
+function norm(s){return (s||'').toLowerCase().replace(/[\ă\â]/g,'a').replace(/\î/g,'i').replace(/[\ș\ş]/g,'s').replace(/[\ț\ţ]/g,'t');}
+
+['Toate'].concat(CATS).forEach(function(c){
+  var b = document.createElement('div');
+  b.className = 'chip' + (c === 'Toate' ? ' on' : '');
+  b.textContent = c; b.tabIndex = 0;
+  b.onclick = function(){ cur = c; [].forEach.call(chips.children, function(x){x.classList.remove('on');}); b.classList.add('on'); render(); };
+  b.onkeydown = function(e){ if(e.key === 'Enter' || e.keyCode === 13){ b.click(); } };
+  chips.appendChild(b);
+});
+
+function phEl(name){
+  var p = document.createElement('div'); p.className = 'ph';
+  p.textContent = (name || '?').trim().charAt(0).toUpperCase();
+  return p;
+}
+
+function logoFallback(name){
+  var words = (name || '?').replace(/&#038;/g, '&').trim().split(/\s+/);
+  var letters = words.length > 1 ? words[0].charAt(0) + words[1].charAt(0) : words[0].slice(0,2);
+  var hue = Math.abs(norm(name).split('').reduce(function(a,ch){ return ((a * 31) + ch.charCodeAt(0)) | 0; }, 17)) % 360;
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop stop-color="hsl(' + hue + ',78%,55%)"/><stop offset="1" stop-color="hsl(' + ((hue + 55) % 360) + ',72%,28%)"/></linearGradient></defs>' +
+    '<rect width="320" height="180" rx="18" fill="url(#g)"/>' +
+    '<text x="160" y="105" text-anchor="middle" font-family="Arial,sans-serif" font-size="64" font-weight="800" fill="white">' +
+    letters.replace(/&/g, '&amp;') + '</text></svg>';
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+function isFallbackLogo(url){
+  return !url || /^data:image\/svg/i.test(url);
+}
+function sourceFromUrl(url){
+  try {
+    var u = new URL(url, location.href);
+    var src = u.searchParams.get('src') || u.searchParams.get('url');
+    return src ? decodeURIComponent(src) : u.href;
+  } catch(e) { return url || ''; }
+}
+function proxiedUrl(src, proxyBase){
+  if (!proxyBase) return src;
+  return proxyBase + encodeURIComponent(src);
+}
+function playableUrl(url){
+  if (!url) return '';
+  var src = sourceFromUrl(url);
+  if (/magicplaces\.eu/i.test(src) || /\.m3u8(?:$|[?#])/i.test(src)) return proxiedUrl(src, PROXY_BASES[0]);
+  return src || url;
+}
+function sourceWithHost(url, host){
+  var src = sourceFromUrl(url);
+  if (!/magicplaces\.eu/i.test(src)) return url;
+  src = src.replace(/https?:\/\/[^/]+/i, 'https://' + host);
+  return src;
+}
+function candidateUrls(c){
+  var src = sourceFromUrl(c.u);
+  var sources = [];
+  var list = [];
+  function addSource(u){
+    if (u && sources.indexOf(u) < 0) sources.push(u);
+  }
+  addSource(src);
+  if (/magicplaces\.eu/i.test(src)){
+    MAGIC_HOSTS.forEach(function(host){ addSource(sourceWithHost(c.u, host)); });
+  }
+  sources.forEach(function(source){
+    PROXY_BASES.forEach(function(proxyBase){
+      var candidate = proxiedUrl(source, proxyBase);
+      if (candidate && list.indexOf(candidate) < 0) list.push(candidate);
+    });
+  });
+  return list;
+}
+function cacheList(){
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({at:Date.now(), channels:CH})); } catch(e){}
+}
+function categoryName(value){
+  var v = norm(String(value || '')).replace(/^tv-/, '');
+  var map = {generaliste:'Generaliste', sport:'Sport', filme:'Filme', stiri:'Stiri',
+    documentare:'Documentare', copii:'Copii', muzica:'Muzica', diverse:'Diverse',
+    regionale:'Regionale', religioase:'Religioase'};
+  return map[v] || CATS.filter(function(x){ return norm(x) === v; })[0] || 'Diverse';
+}
+function firstValue(obj, keys){
+  for (var i = 0; i < keys.length; i++){
+    if (obj && obj[keys[i]] !== undefined && obj[keys[i]] !== null && obj[keys[i]] !== '') return obj[keys[i]];
+  }
+  return '';
+}
+function normalizeChannel(obj){
+  if (!obj || typeof obj !== 'object') return null;
+  var name = firstValue(obj, ['n','name','title','channel_name','channelName']);
+  if (name && typeof name === 'object') name = firstValue(name, ['rendered','name','title']);
+  var stream = firstValue(obj, ['u','url','stream','stream_url','streamUrl','hls','hls_url','playlist','source','src','embed_url','player_url','play_url']);
+  var logo = firstValue(obj, ['l','logo','logo_url','logoUrl','image','image_url','imageUrl','thumbnail','thumbnail_url']);
+  if (stream && typeof stream === 'object') stream = firstValue(stream, ['url','src','stream','hls']);
+  if (logo && typeof logo === 'object') logo = firstValue(logo, ['url','src','source']);
+  if (!name || typeof name !== 'string') return null;
+  if (!stream || typeof stream !== 'string') return null;
+  var rawCats = firstValue(obj, ['c','category','categories','cat','genre']);
+  if (!Array.isArray(rawCats)) rawCats = rawCats ? [rawCats] : [];
+  return {n:name.replace(/<[^>]+>/g,'').trim(), l:logo || logoFallback(name),
+    c:rawCats.map(function(x){ return typeof x === 'object' ? firstValue(x, ['name','slug','title']) : x; }).map(categoryName),
+    u:playableUrl(stream)};
+}
+function collectChannels(value, out, seen){
+  if (!value) return;
+  if (Array.isArray(value)){ value.forEach(function(x){ collectChannels(x, out, seen); }); return; }
+  if (typeof value !== 'object') return;
+  var item = normalizeChannel(value);
+  if (item){
+    var key = norm(item.n);
+    if (!seen[key]) { seen[key] = true; out.push(item); }
+  }
+  Object.keys(value).forEach(function(k){
+    if (k !== 'n' && k !== 'name' && k !== 'title' && k !== 'u' && k !== 'url' &&
+        k !== 'stream' && k !== 'stream_url' && k !== 'logo' && k !== 'image') {
+      collectChannels(value[k], out, seen);
+    }
+  });
+}
+function syncChannels(){
+  if (!SOURCE_API) {
+    status.textContent = 'Sursă: lista locală rds.live · redare cu fallback automat · RomyLive+ 2';
+    return;
+  }
+  if (!window.fetch) return;
+  fetch(SOURCE_API + '?_=' + Date.now(), {
+    method:'POST', headers:{'Accept':'application/json','Content-Type':'application/json'},
+    body:'{}', cache:'no-store'
+  }).then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function(data){
+    var fresh = [], seen = {};
+    collectChannels(data, fresh, seen);
+    if (!fresh.length) throw new Error('format necunoscut');
+    CH = fresh;
+    document.getElementById('cnt').textContent = CH.length + ' canale';
+    cacheList();
+    render();
+    status.textContent = 'Sursă: rds.live · lista actualizată la ' +
+      new Date().toLocaleTimeString('ro-RO', {hour:'2-digit', minute:'2-digit'}) +
+      ' · redare prin hls-proxy · RomyLive+ 2';
+  }).catch(function(){
+    status.textContent = 'Sursă: rds.live · se folosește lista locală de rezervă · RomyLive+ 2';
+  });
+}
+function render(){
+  var nq = norm(q), out = [];
+  for (var i = 0; i < CH.length; i++){
+    var c = CH[i];
+    if (cur !== 'Toate' && c.c.indexOf(cur) < 0) continue;
+    if (nq && norm(c.n).indexOf(nq) < 0) continue;
+    out.push(c);
+  }
+  grid.innerHTML = '';
+  empty.style.display = out.length ? 'none' : 'block';
+  var frag = document.createDocumentFragment();
+  out.forEach(function(c){
+    var d = document.createElement('div');
+    d.className = 'card'; d.tabIndex = 0;
+    var t = document.createElement('div'); t.className = 'thumb';
+    if (c.l && !isFallbackLogo(c.l)){
+      var im = document.createElement('img');
+      im.loading = 'lazy'; im.src = c.l; im.alt = c.n;
+      im.onerror = function(){
+        t.innerHTML = '';
+        var replacement = document.createElement('img');
+        replacement.src = logoFallback(c.n); replacement.alt = c.n;
+        t.appendChild(replacement);
+      };
+      t.appendChild(im);
+    } else {
+      var fallback = document.createElement('img');
+      fallback.src = logoFallback(c.n); fallback.alt = c.n;
+      t.appendChild(fallback);
+    }
+    var n = document.createElement('div'); n.className = 'name'; n.textContent = c.n;
+    d.appendChild(t); d.appendChild(n);
+    d.onclick = function(){ play(c); };
+    d.onkeydown = function(e){ if(e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 23){ play(c); } };
+    frag.appendChild(d);
+  });
+  grid.appendChild(frag);
+}
+
+/* --- auto-ascundere bara (nume canal + buton Inchide) dupa 5 sec --- */
+var barTimer = null, barVisible = true;
+function showBar(){
+  barVisible = true;
+  document.getElementById('bar').classList.remove('hid');
+  if (barTimer) clearTimeout(barTimer);
+  if (window.__modalOpen){
+    barTimer = setTimeout(hideBar, 5000);
+  }
+}
+function hideBar(){
+  if (!window.__modalOpen) return;
+  barVisible = false;
+  document.getElementById('bar').classList.add('hid');
+}
+function armBar(){ showBar(); }
+['mousemove','mousedown','click','touchstart','touchmove','wheel'].forEach(function(ev){
+  pl.addEventListener(ev, function(){ if (window.__modalOpen) showBar(); }, {passive:true});
+});
+document.addEventListener('keydown', function(){ if (window.__modalOpen) showBar(); }, true);
+
+function stop(){
+  if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+  try { if (hls) { hls.destroy(); hls = null; } } catch(e){}
+  try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch(e){}
+}
+
+function play(c, candidateIndex){
+  stop();
+  ttl.textContent = c.n;
+  hint.textContent = 'Se \încarc\ă...';
+  pl.classList.add('on');
+  window.__modalOpen = true;
+  try { closeBtn.focus(); } catch(e){}
+  showBar();
+  try { if (location.hash !== '#player-on') location.hash = 'player-on'; } catch(e){}
+
+  var urls = candidateUrls(c);
+  var url = urls[candidateIndex || 0] || c.u;
+  activeCandidate = candidateIndex || 0;
+  if (loadTimer) clearTimeout(loadTimer);
+  loadTimer = setTimeout(function(){
+    if (!window.__modalOpen) return;
+    if (activeCandidate + 1 < urls.length) {
+      hint.textContent = 'Se încearcă următoarea sursă...';
+      play(c, activeCandidate + 1);
+    } else {
+      hint.textContent = 'Sursa nu răspunde: ' + sourceFromUrl(url);
+    }
+  }, 7000);
+  var native = vid.canPlayType('application/vnd.apple.mpegurl');
+  if (window.Hls && window.Hls.isSupported()){
+    hls = new window.Hls({
+      lowLatencyMode:false,
+      backBufferLength:30,
+      manifestLoadingTimeOut:4500,
+      manifestLoadingMaxRetry:0,
+      levelLoadingTimeOut:4500,
+      levelLoadingMaxRetry:1,
+      fragLoadingTimeOut:8000,
+      fragLoadingMaxRetry:1
+    });
+    hls.loadSource(url);
+    hls.attachMedia(vid);
+    hls.on(window.Hls.Events.MANIFEST_PARSED, function(){ if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; } hint.textContent=''; vid.play().catch(function(){}); });
+    hls.on(window.Hls.Events.ERROR, function(evt, data){
+      if (!data.fatal) return;
+      if ((data.type === window.Hls.ErrorTypes.NETWORK_ERROR ||
+           data.type === window.Hls.ErrorTypes.MEDIA_ERROR) &&
+          activeCandidate + 1 < urls.length) {
+        try { hls.destroy(); } catch(e){}
+        hls = null;
+        hint.textContent = 'Se caută serverul activ...';
+        play(c, activeCandidate + 1);
+      } else if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) { hls.startLoad(); }
+      else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); }
+      else if (activeCandidate + 1 < urls.length) {
+      } else { hint.textContent = 'Canalul nu r\ăspunde. \Încearc\ă alt canal.'; }
+    });
+  } else {
+    vid.src = url;
+    vid.addEventListener('loadedmetadata', function(){ if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; } hint.textContent=''; vid.play().catch(function(){}); }, { once:true });
+    vid.addEventListener('error', function(){
+      if (activeCandidate + 1 < urls.length) play(c, activeCandidate + 1);
+      else hint.textContent = 'Canalul nu r\ăspunde. \Încearc\ă alt canal.';
+    }, { once:true });
+  }
+}
+
+function closePlayer(){
+  stop();
+  if (barTimer) { clearTimeout(barTimer); barTimer = null; }
+  barVisible = true;
+  document.getElementById('bar').classList.remove('hid');
+  pl.classList.remove('on');
+  hint.textContent = '';
+  window.__modalOpen = false;
+  try { if (location.hash === '#player-on') location.hash = 'player-off'; } catch(e){}
+  return true;
+}
+
+window.__closeModal = closePlayer;
+window.__romyPlayerAction = function(){ try { if (vid.paused) { vid.play(); } else { vid.pause(); } } catch(e){} };
+closeBtn.onclick = function(){ if (!barVisible){ showBar(); return; } closePlayer(); };
+closeBtn.onkeydown = function(e){
+  if(e.key === 'Enter' || e.keyCode === 13){
+    if (!barVisible){ showBar(); e.preventDefault(); return; }
+    closePlayer();
+  }
+};
+document.addEventListener('keydown', function(e){
+  if (e.keyCode === 4 || e.key === 'Escape' || e.keyCode === 27){
+    if (window.__modalOpen){ closePlayer(); e.preventDefault(); }
+  }
+});
+search.addEventListener('input', function(){ q = search.value || ''; render(); });
+render();
+syncChannels();
+</script>
+</body>
+</html>

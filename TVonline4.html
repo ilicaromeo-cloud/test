@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TVonline4 - RomyLive+</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0b0e13;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100%}
+body{padding:14px 16px 40px}
+a{color:inherit;text-decoration:none}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:20px;font-weight:800;color:#1e90ff;letter-spacing:.5px}
+h1 span{color:#fff;font-weight:600;font-size:13px;margin-left:6px;opacity:.6}
+#search{flex:1;min-width:160px;background:#151a22;border:1px solid #232b36;color:#fff;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+#search:focus{border-color:#1e90ff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;background:#151a22;border:1px solid #232b36;color:#cfd6e0;border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+.chip.on{background:#1e90ff;border-color:#1e90ff;color:#fff;font-weight:700}
+.chip:focus{outline:none;border-color:#1e90ff;box-shadow:0 0 0 2px rgba(30,144,255,.5)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.card{background:#131821;border:1px solid #1e2531;border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+.card:focus,.card:hover{outline:none;border-color:#1e90ff;transform:scale(1.05);box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.thumb{width:100%;height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.thumb img{max-width:100%;max-height:56px;object-fit:contain}
+.ph{width:100%;max-width:120px;height:48px;padding:0 6px;text-align:center;font-size:13px;overflow:hidden;border-radius:10px;background:linear-gradient(135deg,#1e90ff,#0b4f9e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.name{font-size:12px;line-height:1.25;color:#e6ebf2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:30px}
+.empty{padding:40px 0;text-align:center;color:#8b93a1;font-size:14px}
+#pl{position:fixed;inset:0;background:#000;display:none;z-index:99}
+#pl.on{display:block}
+#pl iframe{width:100%;height:100%;border:0;background:#000}
+#bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);z-index:5}
+#ttl{font-size:14px;font-weight:700;flex:1;text-shadow:0 1px 3px #000}
+#close{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer}
+#close:focus{outline:none;border-color:#1e90ff;background:#1e90ff}
+#bar{transition:opacity .25s,transform .25s}
+#bar.off{opacity:0;transform:translateY(-110%);pointer-events:none}
+#hot{position:absolute;top:0;left:0;right:0;bottom:0;z-index:4;display:none;background:transparent;cursor:default}
+#pl.on #bar.off ~ #hot{display:block}
+#hint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:11px;color:#9aa3b1;transition:opacity .25s}
+#hint.off{opacity:0}
+footer{margin-top:20px;text-align:center;font-size:11px;color:#5a6474}
+</style>
+</head>
+<body>
+<header>
+  <h1>RomyLive+ 4<span>24/7 Channels</span></h1>
+  <input id="search" type="search" placeholder="Caut&#259; canal..." autocomplete="off">
+</header>
+<div class="chips" id="chips"></div>
+<div id="grid"></div>
+<div class="empty" id="empty" style="display:none">Nicio potrivire.</div>
+<footer>RomyLive+ &middot; 900 canale 24/7</footer>
+
+<div id="pl">
+  <div id="bar"><div id="ttl"></div><button id="close">&#10005; &Icirc;nchide</button></div>
+  <iframe id="fr" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+  <div id="hint"></div>
+  <div id="hot"></div>
+</div>
+
+<script>
+/* FIX: pagina de stream are extensia .php - fara ea serverul da 404 */
+var BASE = 'https://dlstreams.st/stream/stream-';
+var EXT  = '.php';
+/* alternativa daca embed-ul direct e blocat: */
+/* var BASE = 'https://dlstreams.st/watch.php?id='; var EXT = ''; */
+var CH = [{"n":"#Vamos Spain","i":"521"},{"n":"18+ (Player-01)","i":"501"},{"n":"18+ (Player-02)","i":"502"},{"n":"18+ (Player-03)","i":"503"},{"n":"18+ (Player-04)","i":"504"},{"n":"18+ (Player-05)","i":"505"},{"n":"18+ (Player-06)","i":"506"},{"n":"18+ (Player-07)","i":"507"},{"n":"18+ (Player-08)","i":"508"},{"n":"18+ (Player-09)","i":"509"},{"n":"18+ (Player-10)","i":"510"},{"n":"18+ (Player-11)","i":"511"},{"n":"18+ (Player-12)","i":"512"},{"n":"18+ (Player-13)","i":"513"},{"n":"18+ (Player-14)","i":"514"},{"n":"18+ (Player-15)","i":"515"},{"n":"18+ (Player-16)","i":"516"},{"n":"18+ (Player-17)","i":"517"},{"n":"18+ (Player-18)","i":"518"},{"n":"18+ (Player-19)","i":"519"},{"n":"18+ (Player-20)","i":"520"},{"n":"20 Mediaset Italy","i":"857"},{"n":"3sat DE","i":"726"},{"n":"5 USA","i":"360"},{"n":"6'eren Denmark","i":"800"},{"n":"6ter France","i":"963"},{"n":"8Sky Cinema Suspense Italy","i":"868"},{"n":"A Spor Turkey","i":"1011"},{"n":"A Sport PK","i":"269"},{"n":"A&E USA","i":"302"},{"n":"ABC NY USA","i":"766"},{"n":"ABC USA","i":"51"},{"n":"Abu Dhabi Sports 1 Premium","i":"609"},{"n":"Abu Dhabi Sports 1 UAE","i":"600"},{"n":"Abu Dhabi Sports 2 Premium","i":"610"},{"n":"Abu Dhabi Sports 2 UAE","i":"601"},{"n":"ACC Network USA","i":"664"},{"n":"Adult Swim","i":"295"},{"n":"AHC (American Heroes Channel)","i":"206"},{"n":"Alkass Four","i":"784"},{"n":"Alkass One","i":"781"},{"n":"Alkass Three","i":"783"},{"n":"Alkass Two","i":"782"},{"n":"Altitude Sports","i":"923"},{"n":"AMC USA","i":"303"},{"n":"Animal Planet","i":"304"},{"n":"Antena 3 Spain","i":"531"},{"n":"Antenna TV USA","i":"283"},{"n":"Arena Sport 1 BiH","i":"579"},{"n":"Arena Sport 1 Croatia","i":"432"},{"n":"Arena Sport 1 Premium","i":"134"},{"n":"Arena Sport 1 Serbia","i":"429"},{"n":"Arena Sport 10 Serbia","i":"945"},{"n":"Arena Sport 2 Croatia","i":"433"},{"n":"Arena Sport 2 Premium","i":"135"},{"n":"Arena Sport 2 Serbia","i":"430"},{"n":"Arena Sport 3 Croatia","i":"434"},{"n":"Arena Sport 3 Premium","i":"139"},{"n":"Arena Sport 3 Serbia","i":"431"},{"n":"Arena Sport 4 Croatia","i":"580"},{"n":"Arena Sport 4 Serbia","i":"581"},{"n":"Arena Sport 5 Serbia","i":"940"},{"n":"Arena Sport 6 Serbia","i":"941"},{"n":"Arena Sport 7 Serbia","i":"942"},{"n":"Arena Sport 8 Serbia","i":"943"},{"n":"Arena Sport 9 Serbia","i":"944"},{"n":"Arena Sports Tenis Serbia","i":"612"},{"n":"Arte DE","i":"725"},{"n":"Arte France","i":"958"},{"n":"Astro Cricket","i":"370"},{"n":"Astro SuperSport 1","i":"123"},{"n":"Astro SuperSport 2","i":"124"},{"n":"Astro SuperSport 3","i":"125"},{"n":"Astro SuperSport 4","i":"126"},{"n":"ATV Turkey","i":"1000"},{"n":"Automoto La chaîne","i":"961"},{"n":"AXN Movies Portugal","i":"717"},{"n":"AXS TV USA","i":"742"},{"n":"Azteca 7 MX","i":"844"},{"n":"Azteca Uno MX","i":"934"},{"n":"Bandsports Brasil","i":"275"},{"n":"Barca TV Spain","i":"522"},{"n":"BBC America (BBCA)","i":"305"},{"n":"BBC Four UK","i":"359"},{"n":"BBC News Channel HD","i":"349"},{"n":"BBC One UK","i":"356"},{"n":"BBC Three UK","i":"358"},{"n":"BBC Two UK","i":"357"},{"n":"beIN Sports 1 Arabic","i":"91"},{"n":"beIN SPORTS 1 France","i":"116"},{"n":"beIN Sports 1 Malaysia","i":"712"},{"n":"beIN SPORTS 1 Turkey","i":"62"},{"n":"beIN Sports 2 Arabic","i":"92"},{"n":"beIN SPORTS 2 France","i":"117"},{"n":"beIN Sports 2 Malaysia","i":"713"},{"n":"beIN SPORTS 2 Turkey","i":"63"},{"n":"beIN Sports 3 Arabic","i":"93"},{"n":"beIN SPORTS 3 France","i":"118"},{"n":"beIN Sports 3 Malaysia","i":"714"},{"n":"beIN SPORTS 3 Turkey","i":"64"},{"n":"beIN Sports 4 Arabic","i":"94"},{"n":"beIN SPORTS 4 Turkey","i":"67"},{"n":"beIN Sports 5 Arabic","i":"95"},{"n":"bein Sports 5 Turkey","i":"1010"},{"n":"beIN Sports 6 Arabic","i":"96"},{"n":"beIN Sports 7 Arabic","i":"97"},{"n":"beIN Sports 8 Arabic","i":"98"},{"n":"beIN Sports 9 Arabic","i":"99"},{"n":"beIN SPORTS Australia 1","i":"491"},{"n":"beIN SPORTS Australia 2","i":"492"},{"n":"beIN SPORTS Australia 3","i":"493"},{"n":"beIN SPORTS en Espa単ol","i":"372"},{"n":"BeIN Sports HD Qatar","i":"578"},{"n":"beIN Sports MAX 10 France","i":"500"},{"n":"beIN Sports MAX 4 France","i":"494"},{"n":"beIN Sports MAX 5 France","i":"495"},{"n":"beIN Sports MAX 6 France","i":"496"},{"n":"beIN Sports MAX 7 France","i":"497"},{"n":"beIN Sports MAX 8 France","i":"498"},{"n":"beIN Sports MAX 9 France","i":"499"},{"n":"beIN SPORTS MAX AR","i":"597"},{"n":"beIN Sports MENA English 1","i":"61"},{"n":"beIN Sports MENA English 2","i":"90"},{"n":"BeIN SPORTS USA","i":"425"},{"n":"beIN SPORTS XTRA 1","i":"100"},{"n":"Benfica TV PT","i":"380"},{"n":"BET USA","i":"306"},{"n":"BFM TV France","i":"957"},{"n":"Big Brother S28 CAM 1","i":"891"},{"n":"Big Brother S28 CAM 2","i":"892"},{"n":"Big Brother S28 CAM 3","i":"893"},{"n":"Big Brother S28 CAM 4","i":"894"},{"n":"Big Brother S28 Quadview","i":"895"},{"n":"BIG TEN Network (BTN USA)","i":"397"},{"n":"BNT 1 Bulgaria","i":"476"},{"n":"BNT 2 Bulgaria","i":"477"},{"n":"BNT 3 Bulgaria","i":"478"},{"n":"Boomerang","i":"648"},{"n":"BR Fernsehen DE","i":"737"},{"n":"Bravo USA","i":"307"},{"n":"bTV Action Bulgaria","i":"481"},{"n":"bTV Bulgaria","i":"479"},{"n":"bTV Lady Bulgaria","i":"484"},{"n":"C More Hits Sweden","i":"813"},{"n":"C SPAN 1","i":"750"},{"n":"C8 France","i":"956"},{"n":"Canal 11 Portugal","i":"540"},{"n":"CANAL 9 Denmark","i":"805"},{"n":"Canal+ Extra 1 Poland","i":"983"},{"n":"Canal+ Extra 2 Poland","i":"984"},{"n":"Canal+ Extra 3 Poland","i":"985"},{"n":"Canal+ Extra 4 Poland","i":"986"},{"n":"Canal+ Extra 5 Poland","i":"987"},{"n":"Canal+ Extra 6 Poland","i":"988"},{"n":"Canal+ Extra 7 Poland","i":"989"},{"n":"Canal+ Family Poland","i":"567"},{"n":"Canal+ Foot France","i":"463"},{"n":"Canal+ Formula 1","i":"273"},{"n":"Canal+ France","i":"121"},{"n":"Canal+ MotoGP France","i":"271"},{"n":"Canal+ Premium Poland","i":"566"},{"n":"Canal+ Seriale Poland","i":"570"},{"n":"Canal+ Sport 1 Afrique","i":"486"},{"n":"Canal+ Sport 2 Afrique","i":"487"},{"n":"Canal+ Sport 2 CZ","i":"1043"},{"n":"Canal+ Sport 2 Poland","i":"73"},{"n":"Canal+ Sport 2 SK","i":"1064"},{"n":"Canal+ Sport 3 Afrique","i":"488"},{"n":"Canal+ Sport 3 CZ","i":"1044"},{"n":"Canal+ Sport 3 Poland","i":"259"},{"n":"Canal+ Sport 3 SK","i":"1065"},{"n":"Canal+ Sport 4 Afrique","i":"489"},{"n":"Canal+ Sport 4 CZ","i":"1045"},{"n":"Canal+ Sport 4 SK","i":"1066"},{"n":"Canal+ Sport 5 Afrique","i":"490"},{"n":"Canal+ Sport 5 CZ","i":"1046"},{"n":"Canal+ Sport 5 Poland","i":"75"},{"n":"Canal+ Sport 6 CZ","i":"1047"},{"n":"Canal+ Sport 7 CZ","i":"1048"},{"n":"Canal+ Sport 8 CZ","i":"1049"},{"n":"Canal+ Sport CZ","i":"1020"},{"n":"Canal+ Sport France","i":"122"},{"n":"Canal+ Sport Poland","i":"48"},{"n":"Canal+ Sport SK","i":"1063"},{"n":"Canal+ Sport360","i":"464"},{"n":"Canal5 MX","i":"936"},{"n":"Cartoon Network","i":"339"},{"n":"CBC CA","i":"832"},{"n":"CBS Sports Golazo","i":"910"},{"n":"CBS Sports Network (CBSSN)","i":"308"},{"n":"CBS USA","i":"52"},{"n":"CBSNY USA","i":"767"},{"n":"Channel 10 Israe","i":"547"},{"n":"Channel 11 Israel","i":"548"},{"n":"Channel 12 Israel","i":"549"},{"n":"Channel 13 Israel","i":"551"},{"n":"Channel 14 Israel","i":"552"},{"n":"Channel 4 UK","i":"354"},{"n":"Channel 5 UK","i":"355"},{"n":"Channel 9 Israel","i":"546"},{"n":"Chicago Sports Network","i":"776"},{"n":"Cinemax USA","i":"374"},{"n":"Citytv","i":"831"},{"n":"Claro Sports MX","i":"933"},{"n":"Cleo TV","i":"715"},{"n":"CMT USA","i":"647"},{"n":"CMTV Portugal","i":"790"},{"n":"CNBC USA","i":"309"},{"n":"CNews France","i":"964"},{"n":"CNN USA","i":"345"},{"n":"Combate Brasil","i":"89"},{"n":"Comedy Central","i":"310"},{"n":"Comet USA","i":"696"},{"n":"Cooking Channel USA","i":"697"},{"n":"Cosmote Sport 1 HD","i":"622"},{"n":"Cosmote Sport 2 HD","i":"623"},{"n":"Cosmote Sport 3 HD","i":"624"},{"n":"Cosmote Sport 4 HD","i":"625"},{"n":"Cosmote Sport 5 HD","i":"626"},{"n":"Cosmote Sport 6 HD","i":"627"},{"n":"Cosmote Sport 7 HD","i":"628"},{"n":"Cosmote Sport 8 HD","i":"629"},{"n":"Cosmote Sport 9 HD","i":"630"},{"n":"Court TV USA","i":"281"},{"n":"COZI TV USA","i":"748"},{"n":"Crime+ Investigation USA","i":"669"},{"n":"CT Sport CZ","i":"1033"},{"n":"CT1 HD CZ","i":"1035"},{"n":"CT2 HD CZ","i":"1036"},{"n":"CTV 2 Canada","i":"838"},{"n":"CTV Canada","i":"602"},{"n":"Cuatro Spain","i":"535"},{"n":"CW Philly","i":"866"},{"n":"CW PIX 11 USA","i":"280"},{"n":"CW USA","i":"300"},{"n":"Cytavision Sports 1 Cyprus","i":"911"},{"n":"Cytavision Sports 2 Cyprus","i":"912"},{"n":"Cytavision Sports 3 Cyprus","i":"913"},{"n":"Cytavision Sports 4 Cyprus","i":"914"},{"n":"Cytavision Sports 5 Cyprus","i":"915"},{"n":"Cytavision Sports 6 Cyprus","i":"916"},{"n":"Cytavision Sports 7 Cyprus","i":"917"},{"n":"Dajto SK","i":"1051"},{"n":"Dave","i":"348"},{"n":"DAZN 1 Bar DE","i":"426"},{"n":"DAZN 1 Spain","i":"445"},{"n":"DAZN 1 UK","i":"230"},{"n":"DAZN 2 Bar DE","i":"427"},{"n":"DAZN 2 Spain","i":"446"},{"n":"DAZN 3 Spain","i":"447"},{"n":"DAZN 4 Spain","i":"448"},{"n":"DAZN F1 ES","i":"537"},{"n":"DAZN LaLiga","i":"538"},{"n":"DAZN Ligue 1 France","i":"960"},{"n":"DAZN Portugal FIFA Mundial de Clubes","i":"918"},{"n":"DAZN ZONA Italy","i":"877"},{"n":"Destination America","i":"651"},{"n":"Diema Bulgaria","i":"482"},{"n":"Diema Family Bulgaria","i":"485"},{"n":"Diema Sport 2 Bulgaria","i":"466"},{"n":"Diema Sport 3 Bulgaria","i":"467"},{"n":"Diema Sport Bulgaria","i":"465"},{"n":"Digi Sport 1 Romania","i":"400"},{"n":"Digi Sport 2 Romania","i":"401"},{"n":"Digi Sport 3 Romania","i":"402"},{"n":"Digi Sport 4 Romania","i":"403"},{"n":"Discovery Channel","i":"313"},{"n":"Discovery Family","i":"657"},{"n":"Discovery Life Channel","i":"311"},{"n":"Discovery Turbo","i":"661"},{"n":"Discovery Velocity CA","i":"285"},{"n":"Disney Channel","i":"312"},{"n":"Disney JR","i":"652"},{"n":"Disney XD","i":"314"},{"n":"DR1 Denmark","i":"801"},{"n":"DR2 Denmark","i":"802"},{"n":"DSTV kykNET & kie","i":"828"},{"n":"DSTV M-Net","i":"827"},{"n":"DSTV Mzansi Magic","i":"786"},{"n":"Dubai Racing 2 UAE","i":"608"},{"n":"Dubai Sports 1 UAE","i":"604"},{"n":"Dubai Sports 2 UAE","i":"605"},{"n":"Dubai Sports 3 UAE","i":"606"},{"n":"E! Entertainment Television","i":"315"},{"n":"E4 Channel","i":"363"},{"n":"Eleven Sports 1 Poland","i":"71"},{"n":"Eleven Sports 1 Portugal","i":"455"},{"n":"Eleven Sports 2 Poland","i":"72"},{"n":"Eleven Sports 2 Portugal","i":"456"},{"n":"Eleven Sports 3 Poland","i":"428"},{"n":"Eleven Sports 3 Portugal","i":"457"},{"n":"Eleven Sports 4 Poland","i":"999"},{"n":"Eleven Sports 4 Portugal","i":"458"},{"n":"Eleven Sports 5 Portugal","i":"459"},{"n":"ERT 1 Greece","i":"774"},{"n":"ESPN 1 MX","i":"925"},{"n":"ESPN 1 NL","i":"379"},{"n":"ESPN 2 MX","i":"926"},{"n":"ESPN 2 NL","i":"386"},{"n":"ESPN 3 MX","i":"927"},{"n":"ESPN 3 NL","i":"888"},{"n":"ESPN 4 MX","i":"928"},{"n":"ESPN Argentina","i":"149"},{"n":"ESPN Brasil","i":"81"},{"n":"ESPN Deportes","i":"375"},{"n":"ESPN Premium Argentina","i":"387"},{"n":"ESPN USA","i":"44"},{"n":"ESPN2 Argentina","i":"150"},{"n":"ESPN2 Brasil","i":"82"},{"n":"ESPN2 USA","i":"45"},{"n":"ESPN3 Argentina","i":"798"},{"n":"ESPN3 Brasil","i":"83"},{"n":"ESPN4 Brasil","i":"85"},{"n":"ESPNews","i":"288"},{"n":"ESPNU USA","i":"316"},{"n":"Eurosport 1 France","i":"772"},{"n":"EuroSport 1 Greece","i":"41"},{"n":"EuroSport 1 Italy","i":"878"},{"n":"Eurosport 1 NL","i":"233"},{"n":"EuroSport 1 Poland","i":"57"},{"n":"EuroSport 1 Spain","i":"524"},{"n":"Eurosport 1 SW","i":"231"},{"n":"Eurosport 2 France","i":"773"},{"n":"EuroSport 2 Greece","i":"42"},{"n":"EuroSport 2 Italy","i":"879"},{"n":"Eurosport 2 NL","i":"234"},{"n":"EuroSport 2 Poland","i":"58"},{"n":"EuroSport 2 Spain","i":"525"},{"n":"Eurosport 2 SW","i":"232"},{"n":"FanDuel Sports Network Arizona","i":"890"},{"n":"FanDuel Sports Network Midwest","i":"896"},{"n":"FanDuel Sports Network New Orleans","i":"897"},{"n":"FanDuel Sports Network North","i":"898"},{"n":"FanDuel Sports Network Ohio","i":"899"},{"n":"FanDuel Sports Network Oklahoma","i":"900"},{"n":"FanDuel Sports Network SoCal","i":"902"},{"n":"FanDuel Sports Network South","i":"903"},{"n":"FanDuel Sports Network Southeast","i":"904"},{"n":"FanDuel Sports Network Sun","i":"905"},{"n":"FanDuel Sports Network West","i":"906"},{"n":"FanDuel Sports Network Wisconsin","i":"907"},{"n":"Fashion TV","i":"744"},{"n":"FETV - Family Entertainment Television","i":"751"},{"n":"Fight Network","i":"757"},{"n":"Film4 UK","i":"688"},{"n":"FilmBox Premium Poland","i":"568"},{"n":"Fox Business","i":"297"},{"n":"Fox Cricket","i":"369"},{"n":"FOX Deportes USA","i":"643"},{"n":"FOX HD Bulgaria","i":"483"},{"n":"Fox News","i":"347"},{"n":"FOX Soccer Plus","i":"756"},{"n":"Fox Sports 1 MX","i":"929"},{"n":"Fox Sports 1 USA","i":"39"},{"n":"Fox Sports 2 Argentina","i":"788"},{"n":"Fox Sports 2 MX","i":"930"},{"n":"Fox Sports 2 USA","i":"758"},{"n":"Fox Sports 3 Argentina","i":"789"},{"n":"Fox Sports 3 MX","i":"931"},{"n":"FOX Sports 502 AU","i":"820"},{"n":"FOX Sports 503 AU","i":"821"},{"n":"FOX Sports 504 AU","i":"822"},{"n":"FOX Sports 505 AU","i":"823"},{"n":"FOX Sports 506 AU","i":"824"},{"n":"FOX Sports 507 AU","i":"825"},{"n":"Fox Sports Argentina","i":"787"},{"n":"Fox Sports Premium MX","i":"830"},{"n":"FOX USA","i":"54"},{"n":"Fox Weather Channel","i":"775"},{"n":"FOXNY USA","i":"768"},{"n":"France 2","i":"950"},{"n":"France 3","i":"951"},{"n":"France 4","i":"952"},{"n":"France 5","i":"953"},{"n":"Freeform","i":"301"},{"n":"FUSE TV USA","i":"279"},{"n":"FX Movie Channel","i":"381"},{"n":"FX USA","i":"317"},{"n":"FXX USA","i":"298"},{"n":"FYI","i":"665"},{"n":"Galavisi贸n USA","i":"743"},{"n":"Game Show Network","i":"319"},{"n":"Global CA","i":"836"},{"n":"Globo RIO","i":"761"},{"n":"Globo SP","i":"760"},{"n":"GOL PLAY Spain","i":"530"},{"n":"Gold UK","i":"687"},{"n":"GOLF Channel USA","i":"318"},{"n":"Great American Family Channel (GAC)","i":"699"},{"n":"Grit Channel","i":"752"},{"n":"Hallmark Movies & Mysterie","i":"296"},{"n":"Happy TV Serbia","i":"846"},{"n":"HBO Comedy USA","i":"690"},{"n":"HBO Family USA","i":"691"},{"n":"HBO Latino USA","i":"692"},{"n":"HBO Poland","i":"569"},{"n":"HBO Signature USA","i":"693"},{"n":"HBO USA","i":"321"},{"n":"HBO Zone USA","i":"694"},{"n":"HBO2 USA","i":"689"},{"n":"Headline News","i":"323"},{"n":"Heroes & Icons (H&I) USA","i":"282"},{"n":"HGTV","i":"382"},{"n":"History USA","i":"322"},{"n":"HOT3 Israel","i":"553"},{"n":"IFC TV USA","i":"656"},{"n":"Investigation Discovery (ID USA)","i":"324"},{"n":"ION USA","i":"325"},{"n":"Italia 1 Italy","i":"854"},{"n":"ITV 1 UK","i":"350"},{"n":"ITV 2 UK","i":"351"},{"n":"ITV 3 UK","i":"352"},{"n":"ITV 4 UK","i":"353"},{"n":"ITV Quiz","i":"876"},{"n":"JOJ SK","i":"1050"},{"n":"JOJ Šport SK","i":"1052"},{"n":"Kabel Eins (Kabel 1) DE","i":"731"},{"n":"Kanal 4 Denmark","i":"803"},{"n":"Kanal 5 Denmark","i":"804"},{"n":"Kanal D Turkey","i":"1001"},{"n":"L'Equipe France","i":"645"},{"n":"La Sexta Spain","i":"534"},{"n":"La7 Italy","i":"855"},{"n":"LA7d HD+ Italy","i":"856"},{"n":"LaLiga SmartBank TV","i":"539"},{"n":"LaLigaTV UK","i":"276"},{"n":"Las Estrellas","i":"924"},{"n":"Law & Crime Network","i":"278"},{"n":"LCI France","i":"962"},{"n":"Lifetime Movies Network","i":"389"},{"n":"Lifetime Network","i":"326"},{"n":"Liverpool TV (LFC TV)","i":"826"},{"n":"Logo TV USA","i":"849"},{"n":"M4 Sports Hungary","i":"265"},{"n":"M6 France","i":"470"},{"n":"Magnolia Network","i":"299"},{"n":"Marquee Sports Network","i":"770"},{"n":"MASN USA","i":"829"},{"n":"Match Football 1 Russia","i":"136"},{"n":"Match Football 2 Russia","i":"137"},{"n":"Match Football 3 Russia","i":"138"},{"n":"Match Premier Russia","i":"573"},{"n":"Match TV Russia","i":"127"},{"n":"Max Sport 1 Bulgaria","i":"472"},{"n":"Max Sport 1 Croatia","i":"779"},{"n":"Max Sport 2 Bulgaria","i":"473"},{"n":"Max Sport 2 Croatia","i":"780"},{"n":"Max Sport 3 Bulgaria","i":"474"},{"n":"Max Sport 4 Bulgaria","i":"475"},{"n":"MDR DE","i":"733"},{"n":"METV USA","i":"662"},{"n":"MGM+ USA / Epix","i":"791"},{"n":"MLB Network USA","i":"399"},{"n":"Monumental Sports Network","i":"778"},{"n":"Motowizja Poland","i":"563"},{"n":"Movistar Deportes 2 Spain","i":"438"},{"n":"Movistar Deportes 3 Spain","i":"526"},{"n":"Movistar Deportes 4 Spain","i":"527"},{"n":"Movistar Deportes Spain","i":"436"},{"n":"Movistar Golf Spain","i":"528"},{"n":"Movistar Laliga","i":"84"},{"n":"Movistar Liga de Campeones","i":"435"},{"n":"Movistar Supercopa de España","i":"437"},{"n":"MSG USA","i":"765"},{"n":"MSNBC","i":"327"},{"n":"MTV Denmark","i":"806"},{"n":"MTV Poland","i":"990"},{"n":"MTV UK","i":"367"},{"n":"MTV USA","i":"371"},{"n":"Mundotoro TV Spain","i":"749"},{"n":"MUTV UK","i":"377"},{"n":"MY9TV USA","i":"654"},{"n":"Nat Geo Wild USA","i":"745"},{"n":"National Geographic (NGC)","i":"328"},{"n":"NBA TV USA","i":"404"},{"n":"NBC Sports Bay Area","i":"753"},{"n":"NBC Sports Boston","i":"754"},{"n":"NBC Sports California","i":"755"},{"n":"NBC Sports Philadelphia","i":"777"},{"n":"NBC Universo","i":"845"},{"n":"NBC USA","i":"53"},{"n":"NBC10 Philadelphia","i":"277"},{"n":"NBCNY USA","i":"769"},{"n":"NDR DE","i":"736"},{"n":"NESN USA","i":"762"},{"n":"Newsmax USA","i":"613"},{"n":"NewsNation USA","i":"292"},{"n":"NFL Network","i":"405"},{"n":"NFL RedZone","i":"667"},{"n":"NHL Network USA","i":"663"},{"n":"NICK","i":"330"},{"n":"NICK JR","i":"329"},{"n":"Nick Music","i":"666"},{"n":"Nicktoons","i":"649"},{"n":"Noovo CA","i":"835"},{"n":"Nova HD CZ","i":"1034"},{"n":"Nova S Serbia","i":"847"},{"n":"Nova Sport 1 CZ","i":"1021"},{"n":"Nova Sport 2 CZ","i":"1022"},{"n":"Nova Sport 3 CZ","i":"1023"},{"n":"Nova Sport 3 SK","i":"1060"},{"n":"Nova Sport 4 CZ","i":"1024"},{"n":"Nova Sport 4 SK","i":"1061"},{"n":"Nova Sport 5 CZ","i":"1025"},{"n":"Nova Sport 5 SK","i":"1062"},{"n":"Nova Sport 6 CZ","i":"1026"},{"n":"Nova Sport Bulgaria","i":"468"},{"n":"Nova Sport Serbia","i":"582"},{"n":"Nova Sports 1 Greece","i":"631"},{"n":"Nova Sports 2 Greece","i":"632"},{"n":"Nova Sports 3 Greece","i":"633"},{"n":"Nova Sports 4 Greece","i":"634"},{"n":"Nova Sports 5 Greece","i":"635"},{"n":"Nova Sports 6 Greece","i":"636"},{"n":"Nova Sports News Greece","i":"639"},{"n":"Nova Sports Premier League Greece","i":"599"},{"n":"Nova Sports Prime Greece","i":"638"},{"n":"Nova Sports Start Greece","i":"637"},{"n":"Nova TV Bulgaria","i":"480"},{"n":"NOW TV Turkey","i":"1003"},{"n":"ONE 1 HD Israel","i":"541"},{"n":"ONE 2 HD Israel","i":"542"},{"n":"OnePlay MD2 CZ","i":"1039"},{"n":"OnePlay MD3 CZ","i":"1040"},{"n":"OnePlay MD4 CZ","i":"1041"},{"n":"Oneplay Sport 1 CZ","i":"1027"},{"n":"Oneplay Sport 2 CZ","i":"1028"},{"n":"Oneplay Sport 3 CZ","i":"1029"},{"n":"OnePlay Sport 4 CZ","i":"1038"},{"n":"OnTime Sports","i":"611"},{"n":"Oprah Winfrey Network (OWN)","i":"331"},{"n":"Orange Sport 1 Romania","i":"439"},{"n":"Orange Sport 2 Romania","i":"440"},{"n":"Orange Sport 3 Romania","i":"441"},{"n":"Orange Sport 4 Romania","i":"442"},{"n":"Outdoor Channel USA","i":"848"},{"n":"Oxygen True Crime","i":"332"},{"n":"Pac-12 Network USA","i":"287"},{"n":"Paramount Network","i":"334"},{"n":"PBS USA","i":"210"},{"n":"PDC TV","i":"43"},{"n":"Polsat Film Poland","i":"564"},{"n":"Polsat News Poland","i":"443"},{"n":"Polsat Poland","i":"562"},{"n":"Polsat Sport 2 Poland","i":"50"},{"n":"Polsat Sport 3 Poland","i":"129"},{"n":"Polsat Sport Extra 1 HD Poland","i":"993"},{"n":"Polsat Sport Extra 2 HD Poland","i":"994"},{"n":"Polsat Sport Extra 3 HD Poland","i":"995"},{"n":"Polsat Sport Extra 4 HD Poland","i":"996"},{"n":"Polsat Sport Fight HD Poland","i":"997"},{"n":"Polsat Sport NEWS HD Poland","i":"998"},{"n":"Polsat Sport Poland","i":"47"},{"n":"Polsat Sport Premium 1 Super HD PL","i":"991"},{"n":"Polsat Sport Premium 2 Super HD PL","i":"992"},{"n":"POP TV USA","i":"653"},{"n":"Porto Canal Portugal","i":"718"},{"n":"Premier Brasil","i":"88"},{"n":"Premier Sport 1 CZ","i":"1030"},{"n":"Premier Sport 2 CZ","i":"1031"},{"n":"Premier Sport 3 CZ","i":"1032"},{"n":"Premier Sports Ireland 1","i":"771"},{"n":"Premier Sports Ireland 2","i":"799"},{"n":"Prima Sport 1","i":"583"},{"n":"Prima Sport 2","i":"584"},{"n":"Prima Sport 3","i":"585"},{"n":"Prima Sport 4","i":"586"},{"n":"Prima TV RO","i":"843"},{"n":"ProSieben (PRO7) DE","i":"730"},{"n":"PTV Sports","i":"450"},{"n":"Racer TV USA","i":"646"},{"n":"Racing Tv UK","i":"555"},{"n":"Rai 1 Italy","i":"850"},{"n":"Rai 2 Italy","i":"851"},{"n":"Rai 3 Italy","i":"852"},{"n":"Rai 4 Italy","i":"853"},{"n":"Rai Premium Italy","i":"858"},{"n":"Rai Sport Italy","i":"882"},{"n":"Rally Tv","i":"607"},{"n":"RDS 2 CA","i":"840"},{"n":"RDS CA","i":"839"},{"n":"RDS Info CA","i":"841"},{"n":"Real Madrid TV Spain","i":"523"},{"n":"Reelz Channel","i":"293"},{"n":"Ring Bulgaria","i":"471"},{"n":"RMC Sport 1 France","i":"119"},{"n":"RMC Sport 2 France","i":"120"},{"n":"RMC Story France","i":"954"},{"n":"Root Sports Northwest","i":"920"},{"n":"RTE 1","i":"364"},{"n":"RTE 2","i":"365"},{"n":"RTL DE","i":"740"},{"n":"RTL7 Netherland","i":"390"},{"n":"RTP 1 Portugal","i":"719"},{"n":"RTP 2 Portugal","i":"720"},{"n":"RTP 3 Portugal","i":"721"},{"n":"S4C UK","i":"670"},{"n":"SAT.1 DE","i":"729"},{"n":"SBS6 NL","i":"883"},{"n":"Science Channel","i":"294"},{"n":"SEC Network USA","i":"385"},{"n":"SEE Denmark","i":"811"},{"n":"Show TV Turkey","i":"1002"},{"n":"Showtime 2 USA (SHO2) USA","i":"792"},{"n":"Showtime Extreme USA","i":"794"},{"n":"Showtime Family Zone (SHO Family Zone) USA","i":"795"},{"n":"Showtime Next (SHO Next) USA","i":"796"},{"n":"Showtime Showcase USA","i":"793"},{"n":"Showtime USA","i":"333"},{"n":"Showtime Women USA","i":"797"},{"n":"SIC Portugal","i":"722"},{"n":"Sixx DE","i":"732"},{"n":"Sky Arts UK","i":"683"},{"n":"Sky Atlantic","i":"362"},{"n":"Sky Calcio 1 (251) Italy","i":"871"},{"n":"Sky Calcio 2 (252) Italy","i":"872"},{"n":"Sky Calcio 3 (253) Italy","i":"873"},{"n":"Sky Calcio 4 (254) Italy","i":"874"},{"n":"Sky Cinema Action Italy","i":"861"},{"n":"Sky Cinema Action UK","i":"677"},{"n":"Sky Cinema Animation UK","i":"675"},{"n":"Sky Cinema Collection Italy","i":"859"},{"n":"Sky Cinema Comedy Italy","i":"862"},{"n":"Sky Cinema Comedy UK","i":"678"},{"n":"Sky Cinema Drama Italy","i":"867"},{"n":"Sky Cinema Drama UK","i":"680"},{"n":"Sky Cinema Family Italy","i":"865"},{"n":"Sky Cinema Family UK","i":"676"},{"n":"Sky Cinema Greats UK","i":"674"},{"n":"Sky Cinema Hits UK","i":"673"},{"n":"Sky Cinema Premiere UK","i":"671"},{"n":"Sky Cinema Romance Italy","i":"864"},{"n":"Sky Cinema Sci-Fi Horror UK","i":"681"},{"n":"Sky Cinema Select UK","i":"672"},{"n":"Sky Cinema Thriller UK","i":"679"},{"n":"Sky Cinema Uno +24 Italy","i":"863"},{"n":"Sky Cinema Uno Italy","i":"860"},{"n":"Sky Comedy UK","i":"684"},{"n":"Sky Crime","i":"685"},{"n":"Sky History","i":"686"},{"n":"Sky MAX UK","i":"708"},{"n":"Sky NEWS UK","i":"695"},{"n":"Sky Serie Italy","i":"880"},{"n":"Sky Showcase UK","i":"682"},{"n":"Sky Sport 1 NZ","i":"588"},{"n":"Sky Sport 2 NZ","i":"589"},{"n":"Sky Sport 24 Italy","i":"869"},{"n":"Sky Sport 3 NZ","i":"590"},{"n":"Sky Sport 4 NZ","i":"591"},{"n":"Sky Sport 5 NZ","i":"592"},{"n":"Sky Sport 6 NZ","i":"593"},{"n":"Sky Sport 7 NZ","i":"594"},{"n":"Sky Sport 8 NZ","i":"595"},{"n":"Sky Sport 9 NZ","i":"596"},{"n":"Sky Sport Arena Italy","i":"462"},{"n":"Sky Sport Austria 1 HD","i":"559"},{"n":"Sky Sport Basket Italy","i":"875"},{"n":"Sky Sport Bundesliga 1 HD","i":"558"},{"n":"Sky Sport Bundesliga 2","i":"946"},{"n":"Sky Sport Bundesliga 3","i":"947"},{"n":"Sky Sport Bundesliga 4","i":"948"},{"n":"Sky Sport Bundesliga 5","i":"949"},{"n":"Sky Sport Calcio Italy","i":"870"},{"n":"Sky Sport F1 Italy","i":"577"},{"n":"Sky Sport MAX Italy","i":"460"},{"n":"Sky Sport Mix DE","i":"557"},{"n":"Sky Sport MotoGP Italy","i":"575"},{"n":"Sky Sport Select NZ","i":"587"},{"n":"Sky Sport Tennis Italy","i":"576"},{"n":"Sky Sport Top Event DE","i":"556"},{"n":"Sky Sport UNO Italy","i":"461"},{"n":"Sky Sports 1 DE","i":"240"},{"n":"Sky Sports 2 DE","i":"241"},{"n":"Sky Sports Action UK","i":"37"},{"n":"Sky Sports Cricket","i":"65"},{"n":"Sky Sports F1 DE","i":"274"},{"n":"Sky Sports F1 UK","i":"60"},{"n":"Sky Sports Football UK","i":"35"},{"n":"Sky Sports Golf DE","i":"785"},{"n":"Sky Sports Golf Italy","i":"574"},{"n":"Sky Sports Golf UK","i":"70"},{"n":"Sky Sports Main Event","i":"38"},{"n":"Sky Sports MIX UK","i":"449"},{"n":"Sky Sports News UK","i":"366"},{"n":"Sky sports Premier League","i":"130"},{"n":"Sky Sports Racing UK","i":"554"},{"n":"Sky Sports Tennis DE","i":"884"},{"n":"Sky Sports Tennis UK","i":"46"},{"n":"Sky Sports+ Plus","i":"36"},{"n":"Sky UNO Italy","i":"881"},{"n":"Sky Witness HD","i":"361"},{"n":"Smithsonian Channel","i":"603"},{"n":"SONY TEN 1","i":"885"},{"n":"SONY TEN 2","i":"886"},{"n":"SONY TEN 3","i":"887"},{"n":"Space City Home Network","i":"921"},{"n":"Spectrum Sportsnet LA","i":"764"},{"n":"Spectrum SportsNet USA","i":"982"},{"n":"Sport 1 CZ","i":"1042"},{"n":"Sport 1 Israel","i":"140"},{"n":"Sport 2 Israel","i":"141"},{"n":"Sport 3 Israel","i":"142"},{"n":"Sport 4 Israel","i":"143"},{"n":"Sport 5 Gold Israel","i":"148"},{"n":"Sport 5 Israel","i":"144"},{"n":"Sport 5 Live Israel","i":"146"},{"n":"Sport 5 PLUS Israel","i":"145"},{"n":"Sport 5 Star Israel","i":"147"},{"n":"Sport en France","i":"965"},{"n":"Sport Klub 1 Croatia","i":"101"},{"n":"Sport Klub 2 Croatia","i":"102"},{"n":"Sport Klub 3 Croatia","i":"103"},{"n":"Sport Klub 4 Croatia","i":"104"},{"n":"Sport KLUB Golf Croatia","i":"710"},{"n":"Sport Klub HD Croatia","i":"453"},{"n":"Sport TV1 Portugal","i":"49"},{"n":"Sport TV2 Portugal","i":"74"},{"n":"Sport TV3 Portugal","i":"454"},{"n":"Sport TV4 Portugal","i":"289"},{"n":"Sport TV5 Portugal","i":"290"},{"n":"Sport TV6 Portugal","i":"291"},{"n":"Sport1 Germany","i":"641"},{"n":"SportDigital Fussball","i":"571"},{"n":"Sportdigital1+ Germany","i":"640"},{"n":"Sporting TV Portugal","i":"716"},{"n":"Sportsnet 360","i":"409"},{"n":"Sportsnet East","i":"408"},{"n":"SportsNet New York (SNY)","i":"759"},{"n":"Sportsnet One","i":"411"},{"n":"Sportsnet Ontario","i":"406"},{"n":"SportsNet Pittsburgh","i":"922"},{"n":"Sportsnet West","i":"407"},{"n":"Sportsnet World","i":"410"},{"n":"SporTV Brasil","i":"78"},{"n":"SporTV2 Brasil","i":"79"},{"n":"SporTV3 Brasil","i":"80"},{"n":"SR Fernsehen DE","i":"739"},{"n":"SSC Sport 1","i":"614"},{"n":"SSC Sport 2","i":"615"},{"n":"SSC Sport 3","i":"616"},{"n":"SSC Sport 4","i":"617"},{"n":"SSC Sport 5","i":"618"},{"n":"SSC Sport Extra 1","i":"619"},{"n":"SSC Sport Extra 2","i":"620"},{"n":"SSC Sport Extra 3","i":"621"},{"n":"Star Sports 1 IN","i":"267"},{"n":"Star Sports Hindi IN","i":"268"},{"n":"Star TV Turkey","i":"1004"},{"n":"Starz","i":"335"},{"n":"Starz Cinema","i":"970"},{"n":"Starz Comedy","i":"971"},{"n":"Starz Edge","i":"972"},{"n":"Starz Encore","i":"975"},{"n":"Starz Encore Action","i":"976"},{"n":"Starz Encore Black","i":"977"},{"n":"Starz Encore Classic","i":"978"},{"n":"Starz Encore Family","i":"979"},{"n":"Starz Encore Suspense","i":"980"},{"n":"Starz Encore Westerns","i":"981"},{"n":"Starz In Black","i":"973"},{"n":"Starz Kids & Family","i":"974"},{"n":"StarzPlay CricLife 1 HD","i":"284"},{"n":"Sundance TV","i":"658"},{"n":"SUPER RTL DE","i":"738"},{"n":"SuperSport Action","i":"420"},{"n":"SuperSport Cricket","i":"368"},{"n":"Supersport Football","i":"56"},{"n":"SuperSport Golf","i":"422"},{"n":"SuperSport Grandstand","i":"412"},{"n":"SuperSport LaLiga","i":"415"},{"n":"SuperSport MaXimo 1","i":"572"},{"n":"SuperSport Motorsport","i":"424"},{"n":"SuperSport Premier league","i":"414"},{"n":"SuperSport PSL","i":"413"},{"n":"SuperSport Rugby","i":"421"},{"n":"SuperSport Tennis","i":"423"},{"n":"SuperSport Variety 1","i":"416"},{"n":"SuperSport Variety 2","i":"417"},{"n":"SuperSport Variety 3","i":"418"},{"n":"SuperSport Variety 4","i":"419"},{"n":"SWR DE","i":"735"},{"n":"SYFY USA","i":"373"},{"n":"T Sports BD","i":"270"},{"n":"TBS USA","i":"336"},{"n":"TCM USA","i":"644"},{"n":"TeenNick","i":"650"},{"n":"Telecinco Spain","i":"532"},{"n":"Teledeporte Spain (TDP)","i":"529"},{"n":"Telemundo","i":"131"},{"n":"Ten Sports PK","i":"741"},{"n":"Tennis Channel","i":"40"},{"n":"Tennis+ 10","i":"709"},{"n":"Tennis+ 12","i":"711"},{"n":"TF1 France","i":"469"},{"n":"The Food Network","i":"384"},{"n":"The Hallmark Channel","i":"320"},{"n":"The Weather Channel","i":"394"},{"n":"TLC","i":"337"},{"n":"TMC Channel USA","i":"698"},{"n":"TMC France","i":"955"},{"n":"TN Live CZ","i":"1037"},{"n":"TNT Brasil","i":"87"},{"n":"TNT Sports 1 UK","i":"31"},{"n":"TNT Sports 2 UK","i":"32"},{"n":"TNT Sports 3 UK","i":"33"},{"n":"TNT Sports 4 UK","i":"34"},{"n":"TNT Sports Argentina","i":"388"},{"n":"TNT Sports HD Chile","i":"642"},{"n":"TNT USA","i":"338"},{"n":"Travel Channel","i":"340"},{"n":"TRT Spor TR","i":"889"},{"n":"TruTV USA","i":"341"},{"n":"TSN1","i":"111"},{"n":"TSN2","i":"112"},{"n":"TSN3","i":"113"},{"n":"TSN4","i":"114"},{"n":"TSN5","i":"115"},{"n":"TUDN MX","i":"935"},{"n":"TUDN USA","i":"66"},{"n":"TV 2 Sport 2 Norway","i":"814"},{"n":"TV 2 Sport Norway","i":"812"},{"n":"TV ONE USA","i":"660"},{"n":"TV2 Bornholm Denmark","i":"807"},{"n":"TV2 Denmark","i":"817"},{"n":"TV2 Sport Denmark","i":"810"},{"n":"TV2 Sport X Denmark","i":"808"},{"n":"TV2 Zulu","i":"818"},{"n":"TV3 Max Denmark","i":"223"},{"n":"TV3 Sport Denmark","i":"809"},{"n":"TV3+ Denmark","i":"819"},{"n":"TV4 Football Sweden","i":"747"},{"n":"TV4 Hockey","i":"700"},{"n":"TV4 Motor","i":"702"},{"n":"TV4 Sport Live 1","i":"703"},{"n":"TV4 Sport Live 2","i":"704"},{"n":"TV4 Sport Live 3","i":"705"},{"n":"TV4 Sport Live 4","i":"706"},{"n":"TV4 Sportkanalen","i":"707"},{"n":"TV4 Tennis","i":"701"},{"n":"TV8 Turkey","i":"1005"},{"n":"TVA Sports","i":"833"},{"n":"TVA Sports 2","i":"834"},{"n":"TVC Deportes MX","i":"932"},{"n":"TVE La 1 Spain","i":"533"},{"n":"TVE La 2 Spain","i":"536"},{"n":"TVI Portugal","i":"723"},{"n":"TVI Reality Portugal","i":"724"},{"n":"TVLAND","i":"342"},{"n":"TVN HD Poland","i":"565"},{"n":"TVN24 Poland","i":"444"},{"n":"TVO CA","i":"842"},{"n":"TVP INFO","i":"452"},{"n":"TVP Sport Poland","i":"128"},{"n":"TVP1 Poland","i":"560"},{"n":"TVP2 Poland","i":"561"},{"n":"TYC Sports Argentina","i":"746"},{"n":"Unimas","i":"133"},{"n":"Universal Kids USA","i":"668"},{"n":"Univision","i":"132"},{"n":"USA Network","i":"343"},{"n":"V Film Family","i":"816"},{"n":"V Film Premiere","i":"815"},{"n":"V Sport Motor Sweden","i":"272"},{"n":"Veronica NL Netherland","i":"378"},{"n":"VH1 USA","i":"344"},{"n":"Viaplay Sports 1 UK","i":"451"},{"n":"Viaplay Sports 2 UK","i":"550"},{"n":"VICE TV","i":"659"},{"n":"Vodafone Sport","i":"260"},{"n":"Voyo Special 1 SK","i":"1053"},{"n":"Voyo Special 2 SK","i":"1054"},{"n":"Voyo Special 3 SK","i":"1055"},{"n":"Voyo Special 4 SK","i":"1056"},{"n":"Voyo Special 7 SK","i":"1057"},{"n":"Voyo Special 8 SK","i":"1058"},{"n":"Voyo Special 9 SK","i":"1059"},{"n":"VTV+ Uruguay","i":"391"},{"n":"W9 France","i":"959"},{"n":"WDR DE","i":"734"},{"n":"WETV USA","i":"655"},{"n":"Willow 2 Cricket","i":"598"},{"n":"Willow Cricket","i":"346"},{"n":"Win Sports+ Columbia","i":"392"},{"n":"WWE Network","i":"376"},{"n":"Yes Movies Action Israel","i":"543"},{"n":"Yes Movies Comedy Israel","i":"545"},{"n":"Yes Movies Kids Israel","i":"544"},{"n":"YES Network USA","i":"763"},{"n":"Yes TV CA","i":"837"},{"n":"YTV CA","i":"286"},{"n":"ZDF DE","i":"727"},{"n":"ZDF Info DE","i":"728"},{"n":"Ziggo Sport 2 NL","i":"398"},{"n":"Ziggo Sport 3 NL","i":"919"},{"n":"Ziggo Sport 4 NL","i":"396"},{"n":"Ziggo Sport 5 NL","i":"383"},{"n":"Ziggo Sport 6 NL","i":"901"},{"n":"Ziggo Sport NL","i":"393"},{"n":"МАТЧ! БОЕЦ Russia","i":"395"}];
+var CATS = ["#", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U", "V", "W", "Y", "Z", "\u041c"];
+var cur = 'Toate', q = '';
+
+var grid = document.getElementById('grid'), chips = document.getElementById('chips'),
+    empty = document.getElementById('empty'), pl = document.getElementById('pl'),
+    fr = document.getElementById('fr'), ttl = document.getElementById('ttl'),
+    closeBtn = document.getElementById('close'), search = document.getElementById('search'),
+    bar = document.getElementById('bar'), hot = document.getElementById('hot'),
+    hint = document.getElementById('hint');
+
+function letterOf(n){var ch0=(n||'').charAt(0).toUpperCase();return /[A-Z]/.test(ch0)?ch0:'#';}
+function norm(s){return s.toLowerCase().replace(/[\ă\â]/g,'a').replace(/\î/g,'i').replace(/[\ș\ş]/g,'s').replace(/[\ț\ţ]/g,'t');}
+
+['Toate'].concat(CATS).forEach(function(c){
+  var b = document.createElement('div');
+  b.className = 'chip' + (c === 'Toate' ? ' on' : '');
+  b.textContent = c; b.tabIndex = 0;
+  b.onclick = function(){ cur = c; [].forEach.call(chips.children, function(x){x.classList.remove('on');}); b.classList.add('on'); render(); };
+  b.onkeydown = function(e){ if(e.key === 'Enter' || e.keyCode === 13){ b.click(); } };
+  chips.appendChild(b);
+});
+
+function render(){
+  var nq = norm(q), out = [];
+  for (var i = 0; i < CH.length; i++){
+    var c = CH[i];
+    if (cur !== 'Toate' && letterOf(c.n) !== cur) continue;
+    if (nq && norm(c.n).indexOf(nq) < 0 && String(c.i).indexOf(nq) < 0) continue;
+    out.push(c);
+  }
+  grid.innerHTML = '';
+  empty.style.display = out.length ? 'none' : 'block';
+  var frag = document.createDocumentFragment();
+  out.forEach(function(c){
+    var d = document.createElement('div');
+    d.className = 'card'; d.tabIndex = 0;
+    var t = document.createElement('div'); t.className = 'thumb';
+    t.appendChild(phEl(c.n));
+    var n = document.createElement('div'); n.className = 'name'; n.textContent = c.n;
+    d.appendChild(t); d.appendChild(n);
+    d.onclick = function(){ play(c); };
+    d.onmouseenter = function(){ lastSel = d; };
+    d.onfocus = function(){ lastSel = d; };
+    d.onkeydown = function(e){ var k = e.keyCode || 0; if(e.key === 'Enter' || e.key === 'Select' || k === 13 || k === 23 || k === 66 || k === 32){ e.preventDefault(); play(c); } };
+    frag.appendChild(d);
+  });
+  grid.appendChild(frag);
+}
+
+function phEl(name){
+  var p = document.createElement('div'); p.className = 'ph';
+  p.textContent = (name || '?').trim().charAt(0).toUpperCase();
+  return p;
+}
+
+function play(c){
+  ttl.textContent = c.n;
+  fr.src = BASE + c.i + EXT;
+  pl.classList.add('on');
+  window.__modalOpen = true;
+  showBar();
+  try { closeBtn.focus(); } catch(e){}
+  try { if (location.hash !== '#player-on') location.hash = 'player-on'; } catch(e){}
+}
+
+function closePlayer(){
+  stopWatch();
+  barOn = true;
+  bar.style.display = '';
+  hint.style.display = '';
+  bar.classList.remove('off');
+  hint.classList.remove('off');
+  hot.style.display = 'none';
+  pl.classList.remove('on');
+  fr.src = 'about:blank';
+  window.__modalOpen = false;
+  try { if (location.hash === '#player-on') location.hash = 'player-off'; } catch(e){}
+  return true;
+}
+
+window.__closeModal = closePlayer;
+closeBtn.onclick = closePlayer;
+closeBtn.onkeydown = function(e){ var k = e.keyCode || 0; if(e.key === 'Enter' || e.key === 'Select' || k === 13 || k === 23 || k === 66){ e.preventDefault(); closePlayer(); } };
+
+/* ================= bara: auto-hide dupa 10s de inactivitate ================= */
+var HIDE_MS = 10000, barOn = true, lastAct = Date.now(), watchdog = null,
+    lastX = -1, lastY = -1;
+
+function playerOpen(){
+  return !!window.__modalOpen || pl.classList.contains('on');
+}
+function showBar(){
+  barOn = true;
+  lastAct = Date.now();
+  bar.style.display = '';
+  hint.style.display = '';
+  /* forteaza repaint in WebView-urile de Android TV */
+  void bar.offsetHeight;
+  bar.classList.remove('off');
+  hint.classList.remove('off');
+  hot.style.display = 'none';
+  startWatch();
+}
+function hideBar(){
+  if (!playerOpen()) return;
+  barOn = false;
+  bar.classList.add('off');
+  hint.classList.add('off');
+  /* display:none garanteaza dispariția si pe WebView-urile care nu repicteaza opacity peste video */
+  bar.style.display = 'none';
+  hint.style.display = 'none';
+  hot.style.display = 'block';
+  try { if (document.activeElement === closeBtn) closeBtn.blur(); } catch(e){}
+}
+/* watchdog: verifica inactivitatea o data pe secunda (imun la setTimeout pierdut/throttled) */
+function startWatch(){
+  if (watchdog) return;
+  watchdog = setInterval(function(){
+    if (!playerOpen()){ stopWatch(); return; }
+    if (barOn && (Date.now() - lastAct) >= HIDE_MS) hideBar();
+  }, 1000);
+}
+function stopWatch(){
+  if (watchdog){ clearInterval(watchdog); watchdog = null; }
+}
+function armHide(){ lastAct = Date.now(); startWatch(); }
+
+/* orice activitate reala reafiseaza bara si reseteaza cele 10s */
+function bump(){
+  if (!playerOpen()) return;
+  lastAct = Date.now();
+  if (!barOn) showBar(); else startWatch();
+}
+window.__romyActivity = bump;
+window.__romyBarState = function(){
+  return JSON.stringify({open: playerOpen(), barOn: barOn, idle: Date.now() - lastAct, watch: !!watchdog});
+};
+
+/* mousemove: ignora tremuratul pointerului (air-mouse) sub 6px, altfel bara nu s-ar ascunde niciodata */
+document.addEventListener('mousemove', function(e){
+  var dx = Math.abs(e.clientX - lastX), dy = Math.abs(e.clientY - lastY);
+  if (lastX >= 0 && dx < 6 && dy < 6) return;
+  lastX = e.clientX; lastY = e.clientY;
+  bump();
+}, true);
+['mousedown','click','wheel','touchstart','touchmove'].forEach(function(ev){
+  document.addEventListener(ev, bump, true);
+});
+['mousemove','mousedown','click','touchstart','wheel'].forEach(function(ev){
+  hot.addEventListener(ev, function(e){ e.stopPropagation(); if (ev !== 'mousemove') e.preventDefault(); showBar(); });
+});
+
+/* ================= OK / SELECT de la telecomanda ================= */
+var lastSel = null;
+
+document.addEventListener('focusin', function(e){
+  var el = e.target;
+  if (el && el.closest){ var c = el.closest('.card,.chip'); if (c) lastSel = c; }
+}, true);
+document.addEventListener('mouseover', function(e){
+  var el = e.target && e.target.closest ? e.target.closest('.card,.chip') : null;
+  if (el) lastSel = el;
+}, true);
+
+function currentTarget(){
+  var a = document.activeElement;
+  if (a && a.closest){
+    var c = a.closest('.card,.chip,#close,#search');
+    if (c) return c;
+  }
+  return lastSel;
+}
+
+/* apelata de aplicatie cand se apasa OK/Play pe telecomanda */
+function okAction(){
+  if (window.__modalOpen){
+    if (!barOn){ showBar(); return true; }          /* prima apasare: doar arata bara */
+    closePlayer(); return true;                      /* a doua apasare: inchide */
+  }
+  var el = currentTarget();
+  if (!el || el === search) el = lastSel || document.querySelector('.card');
+  if (el){
+    try { el.focus(); } catch(e){}
+    lastSel = (el.classList && (el.classList.contains('card') || el.classList.contains('chip'))) ? el : lastSel;
+    el.click();
+    return true;
+  }
+  return false;
+}
+window.__romyPlayerAction = okAction;
+window.__romyOk = okAction;
+window.__romySelect = okAction;
+window.__romyClick = okAction;
+
+function isOkKey(e){
+  var k = e.keyCode || 0;
+  if (k === 13 || k === 23 || k === 66 || k === 32 || k === 62 || k === 85 || k === 96 || k === 160) return true;
+  if (e.key === 'Enter' || e.key === 'Select' || e.key === ' ' || e.key === 'Spacebar') return true;
+  /* OK nemapat pe unele telecomande: keyCode 0 / key nedefinit */
+  if (k === 0 && (!e.key || e.key === 'Unidentified')) return true;
+  return false;
+}
+
+document.addEventListener('keydown', function(e){
+  var k = e.keyCode || 0;
+
+  /* BACK / ESC inchide playerul */
+  if (k === 4 || k === 27 || e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack'){
+    if (window.__modalOpen){ closePlayer(); e.preventDefault(); e.stopPropagation(); }
+    return;
+  }
+
+  bump();
+
+  /* in caseta de cautare lasam tastatura sa lucreze normal */
+  if (e.target === search && !window.__modalOpen){
+    if (isOkKey(e) && k !== 32){ e.preventDefault(); try{ search.blur(); }catch(_){} 
+      var f = lastSel || document.querySelector('.card'); if (f){ try{f.focus();}catch(__){} } }
+    return;
+  }
+
+  if (isOkKey(e)){
+    if (okAction()){ e.preventDefault(); e.stopPropagation(); }
+    return;
+  }
+
+  /* daca nimic nu e focusat si se apasa o directie, focuseaza primul canal */
+  if ((k >= 19 && k <= 22) || (k >= 37 && k <= 40)){
+    var a = document.activeElement;
+    if (!a || a === document.body || a === document.documentElement){
+      var first = lastSel || document.querySelector('.card');
+      if (first){ try { first.focus(); } catch(_){} e.preventDefault(); }
+    }
+  }
+}, true);
+
+document.addEventListener('keyup', function(e){ bump(); }, true);
+
+/* focus initial pe primul canal, ca OK sa functioneze imediat */
+setTimeout(function(){
+  var f = document.querySelector('.card');
+  if (f && (document.activeElement === document.body || !document.activeElement)){
+    lastSel = f; try { f.focus(); } catch(e){}
+  }
+}, 350);
+
+search.addEventListener('input', function(){ q = search.value || ''; render(); });
+render();
+</script>
+</body>
+</html>
