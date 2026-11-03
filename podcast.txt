@@ -1,0 +1,123 @@
+<item>
+    <title>un PODCAST misto By Bursucu'</title>
+    <playlist>https://www.youtube.com/playlist?list=PL2-cuEi5m7rjpK0GZrxisrBWphZyrj9_1</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/PtGjRiPur2Iis0E93OfUW1_h7RRtkB6VmaNpCzDWai48Mx6SGTJQa-1yS97PhlYSgrfD-ymIEg=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Podcastul lui #Damian Draghici</title>
+    <playlist>https://www.youtube.com/playlist?list=PLdTx1Z-8iibOQbriyOx9iFgmB7DP0sgim</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/hS5kRFwNctS6RiOywFzn17M-7z9PXWwT5qDgu-9jcu4O5RBhn_uBkhtXiYvBSOf20r_x7VfGcQ=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Fain & Simplu cu Mihai Morar</title>
+    <youtubechannel>https://www.youtube.com/channel/UCaJ0owtk4s_tC2GSMaKtc1g</youtubechannel>
+    <thumbnail>https://yt3.googleusercontent.com/l59Bd2jXtsL95Tv_zMnNIb0f8WKJ_vGCP-SxCE97RT3i0C53b5BVtB42DTd4xaUB6d1mwoNYYQ=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Gând la Gând cu Teo</title>
+    <playlist>https://www.youtube.com/playlist?list=PLzPTaL7GuyLuogZ86CANrxO2dRzqc7G6l</playlist>
+    <thumbnail>https://i.scdn.co/image/ab67656300005f1f36a959b615bce1c3fef9b5d5</thumbnail>
+</item>
+
+<item>
+    <title>Podcast Horia Brenciu</title>
+    <youtubechannel>https://www.youtube.com/channel/UCPafEh7hWDc5HHQhHxJ8N8g</youtubechannel>
+    <thumbnail>https://yt3.googleusercontent.com/ytc/AIdro_kEjo5-OrKlrgN-5aAEZUiq14KWhQ0to88x9EHDZ4AnQQ=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Boabe de Cunoastere -- Doctor Mihail</title>
+    <playlist>https://www.youtube.com/playlist?list=PLFh_zvL8SEOLD0qvd-Rt4pJeQT-P5t5gP</playlist>
+    <thumbnail>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-u8TzwEliRO_ePrArJVlP9DtyD11dL4E8wUJTAdj3pQ&s</thumbnail>
+</item>
+
+<item>
+    <title>Vin de-o Poveste 🍷 | Radu Tibulca</title>
+    <playlist>https://www.youtube.com/playlist?list=PLGwxwBGaNVvhEIMPMNsL5O8EJhmY1vUZv</playlist>
+    <thumbnail>https://i.scdn.co/image/ab6765630000ba8a8798dcb5c88e9249a0f53f44</thumbnail>
+</item>
+
+<item>
+    <title>Acasa La Maruta</title>
+    <playlist>https://www.youtube.com/playlist?list=PLx_hdZfhyQqeAOXZd30MFuLzQRL3iaZik</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/Kb7LRji_7Sc-HH4pcRViHF96mo_ts_li-g216YjhpJuR0LCd4X9v4j40smch2cA9CiKNFo9-Lw=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Vreau sa stiu</title>
+    <playlist>https://www.youtube.com/playlist?list=PLrX4s7fG709b7ZLEvu66znreLbu6ruXgT</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/gkdbwOgcIvbGPI0awR7Ek2pjb0yk0QY06qyuzlZ5UhVCraU9z7nPE4NSUYc3Ug3CT8V-v6816gE=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Vorba lui Jorge</title>
+    <playlist>https://www.youtube.com/playlist?list=PL5G773Vk7KfY-GMt6eQguB9nioCEWJe-t</playlist>
+    <thumbnail>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJSDdt3YslLrEmmo_XogyueECDiUtlO7Ekro7mJ1MPOpl_VUVeIcy-6o0&s=10</thumbnail>
+</item>
+
+<item>
+    <title>Gabriela Cristea Official</title>
+    <youtubechannel>https://www.youtube.com/channel/UCSscTNfkXUvZ0-ZCeKWB3pA</youtubechannel>
+    <thumbnail>https://i.ytimg.com/vi/frxT5LfGHIE/maxresdefault.jpg</thumbnail>
+</item>
+
+<item>
+    <title>Un podcast</title>
+    <playlist>https://www.youtube.com/playlist?list=PLY07f_oDVFN8gqTqwNjxgEt44NdTyrGmi</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/riWliTt0iwtgDM3sUlK8rpliV3tWKTPrtGDBszKTxc214g4sD1PsISvF5bqFAsH1bL69ANCiAw=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>iAMsport</title>
+    <playlist>https://www.youtube.com/playlist?list=PLGAckpPcG_xHJBswU0wCQ94Gn_YDnVRxM</playlist>
+    <thumbnail>https://yt3.googleusercontent.com/T_BLznKiaEVrMbggomL8tEAwcodBlGtbRAkHDh2mg9TsSPLfWOovFkQyLCLbDp9dPd_-vtW9oQ=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+    <title>Nicoleta Luciu Official</title>
+    <playlist>https://www.youtube.com/playlist?list=PLsIBWxH2bV7pYKUrDO7jtgv2dt-E6a-TT</playlist>
+    <thumbnail>https://www.cancan.ro/wp-content/uploads/2025/10/nicoletaluciuofficial_1752226016_3674260594882703405_2188487336.jpg</thumbnail>
+</item>
+
+<item>
+    <title>Ioana Ginghina Official</title>
+    <youtubechannel>https://www.youtube.com/channel/UCv08_Am5FGUzJg3JjaRlOEw</youtubechannel>
+    <thumbnail>https://cdn.knd.ro/media/521/2942/1736/20391979/1/ioana-ginghina.jpg?width=850&height=1063</thumbnail>
+</item>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

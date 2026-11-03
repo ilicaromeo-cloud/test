@@ -1,0 +1,43 @@
+
+
+<item>
+<title>Stirile ProTV</title>
+<youtubechannel>https://www.youtube.com/channel/UCEJf5cGtkBdZS8Jh2uSW9xw</youtubechannel>
+<thumbnail>https://stirileprotv.ro/build/stirileprotv/assets/ss_cub_stiri_720p-CnTaEKtX.png</thumbnail>
+</item>
+
+<item>
+<title>Stiri Digi24</title>
+<playlist>https://www.youtube.com/playlist?list=PLXho0H8fG-wU9uvU3xNlxHajRV0rukAvB</playlist>
+<thumbnail>https://s.iw.ro/gateway/g/ZmlsZVNvdXJjZT1odHRwJTNBJTJGJTJG/c3RvcmFnZTA4dHJhbnNjb2Rlci5yY3Mt/cmRzLnJvJTJGc3RvcmFnZSUyRjIwMjQl/MkYwNSUyRjE0JTJGMTk3NDUxOF8xOTc0/NTE4X2p1cm5hbGUtbG9nby0xLTUtMS5q/cGcmdz0zODAmaD0yMTQmaGFzaD1mOTgw/YWM2OWFlOTYyZTY5NjQyNzE4YjYyN2I1ODVmMQ==.thumb.jpg</thumbnail>
+</item>
+
+<item>
+<title>Observator News</title>
+<youtubechannel>https://www.youtube.com/channel/UCDhQYbT-x0GzRLbdWKeK2XA</youtubechannel>
+<thumbnail>https://yt3.googleusercontent.com/F-bIRxdRmS49azCWeAt9XO3n5q3-rXEfnGaaTjFuwkinhpS6Dv3X2sCXEKY8KzknsOQ3lKE5ElY=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+<item>
+<title>Stiri B1 TV</title>
+<playlist>https://www.youtube.com/playlist?list=PLJDGHCkqpHjHDKcrV4fJjiI7Nc4sM2xNg</playlist>
+<thumbnail>https://images.seeklogo.com/logo-png/61/2/b1-tv-logo-png_seeklogo-612181.png</thumbnail>
+</item>
+
+<item>
+<title>Romania TV Live YouTube</title>
+<link>https://www.youtube.com/watch?v=EMGA3bAGALE</link>
+<thumbnail>https://www.romaniatv.net/wp-content/uploads/2017/07/sigla_romania_tv_final_mare_72647900_87066100.jpg</thumbnail>
+</item>
+
+<item>
+<title>Romania TV</title>
+<youtubechannel>https://www.youtube.com/channel/UC5Bb0itu0pB46xykW32ck0g</youtubechannel>
+<thumbnail>https://www.romaniatv.net/wp-content/uploads/2017/07/sigla_romania_tv_final_mare_72647900_87066100.jpg</thumbnail>
+</item>
+
+<item>
+<title>Focus Prima TV</title>
+<playlist>https://www.youtube.com/playlist?list=PL4GqKMm44AA29oD-amyJ5JIaq9c7mAme1</playlist>
+<thumbnail>https://yt3.googleusercontent.com/giwIN4tpiy6l7uyzvS1icukQlhNvGq02qNdx81daQWm-mja5zMnESl5EbWCi5vGqO6JZEV3Y=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>

@@ -1,0 +1,39 @@
+<item>
+    <title>Orange Sport</title>
+    <playlist>https://www.youtube.com/playlist?list=PL157Fq3UCbJ0RppBFwi9sxOmDNAJS0xQA</playlist>
+    <thumbnail>https://gadget.ro/wp-content/uploads/2024/03/Screenshot-2024-03-30-at-14-00-19-Orange_Sport_logo.svg_.png-PNG-Image-1280-%C3%97-410-pixels.png</thumbnail>
+</item>
+
+<item>
+    <title>Gazeta Sporturilor -- Prietenii lui Ovidiu</title>
+    <playlist>https://www.youtube.com/playlist?list=PLwYycfyz0sAkp-femMxnNo6W1GYE73eed</playlist>
+    <thumbnail>https://i.scdn.co/image/ab6765630000ba8ae56bf954a6df24753ab91292</thumbnail>
+</item>
+
+<item>
+    <title>VOYO Sport Live</title>
+    <playlist>https://www.youtube.com/playlist?list=PLbQ3jrXYeNvI</playlist>
+    <thumbnail>https://www.sport.ro/img/2026/09/14/065130/voyo-sport-live-1920-x-1080.png?fm=webp&q=80&fit=crop&crop=1920%2C1080%2C0%2C0&w=1280</thumbnail>
+</item>
+
+<item>
+    <title>Digi Sport - Fotbal Club</title>
+    <playlist>https://www.youtube.com/playlist?list=PL5Iisha-tKpyMfwWrAibJ-HrXrULgprTq</playlist>
+    <thumbnail>https://s.iw.ro/gateway/g/ZmlsZVNvdXJjZT1odHRwJTNBJTJGJTJG/c3RvcmFnZTAxZGlnaXMucmNzLXJkcy5y/byUyRnN0b3JhZ2UlMkYyMDI2JTJGMDcl/MkYxMSUyRjI4NDM0ODlfMjg0MzQ4OV9k/YW5jaXVsZXNjdS1hbGliZWMtMTEwNzI2/X3NpdGUxbm91Lm1wNC5zbmFwc2hvdC4z/LmpwZyZoYXNoPTlhOTAxNTE1NmEyZDYwM2FlNmI1MWYwNzk1NmZmODY5.mp4.snapshot.3.jpg</thumbnail>
+</item>
+
+<item>
+    <title>Fotbal Romania</title>
+    <youtubechannel>https://www.youtube.com/channel/UCiDRA0Fl2btJHP3nX-CpGcw</youtubechannel>
+    <thumbnail>https://yt3.googleusercontent.com/tCt2jFJi0WG2wqhPbdLkDVoYZWfbRrsCKid2alSibGQ70zglvm3t_tHqw9w5t8wOMKH4JZe0dg=s900-c-k-c0x00ffffff-no-rj</thumbnail>
+</item>
+
+
+
+
+
+
+
+
+
+
